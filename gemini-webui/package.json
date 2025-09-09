@@ -1,0 +1,23 @@
+{
+  "name": "gemini-webui",
+  "version": "0.1.0",
+  "description": "Minimal Web UI wrapper for a generic AI CLI (defaults to gemini-cli)",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test tests/*.test.js"
+  },
+  "keywords": [
+    "gemini",
+    "webui",
+    "cli",
+    "wrapper"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
+

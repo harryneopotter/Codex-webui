@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Gemini WebUI</title>
+    <style>
+      :root { --bg:#0b0b0c; --panel:#0f1014; --panel2:#111216; --border:#23242a; --text:#eaeaea; --muted:#9aa0a6; --btn:#1a1b22; --btnb:#2a2b32; --accent:#2b6ef6; }
+      body.light { --bg:#f6f8fb; --panel:#ffffff; --panel2:#eef1f6; --border:#d5d9e2; --text:#0b0b0c; --muted:#6b7280; --btn:#ffffff; --btnb:#cfd4dd; --accent:#2b6ef6; }
+      html, body { margin: 0; padding: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background: var(--bg); color: var(--text); height: 100%; }
+      .wrap { display: flex; flex-direction: column; height: 100vh; opacity:0; transform: translateY(4px); transition: opacity .22s ease, transform .22s ease; }
+      body.ready .wrap { opacity:1; transform: translateY(0); }
+      header { padding: 12px 16px; background: var(--panel2); border-bottom: 1px solid var(--border); font-weight: 600; display:flex; align-items:center; justify-content:space-between; }
+      header .stats { font-weight: 500; opacity:.85; font-size: 13px; }
+      .dot { width:10px; height:10px; border-radius:50%; display:inline-block; margin-right:8px; background:#999; box-shadow: 0 0 0 1px rgba(0,0,0,.2) inset; vertical-align:middle; }
+      .dot.ok { background:#22c55e; }
+      .dot.warn { background:#f59e0b; }
+      .dot.err { background:#ef4444; }
+      .content { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+      .toolbar { display:flex; gap:8px; align-items:center; padding:8px; border-bottom:1px solid var(--border); background:var(--panel); }
+      .toolbar button { background:var(--btn); color:var(--text); border:1px solid var(--btnb); border-radius:6px; padding:6px 10px; cursor:pointer; }
+      #log { flex: 1; overflow: auto; padding: 16px; line-height: 1.45; }
+      .sys { color: #8ab4f8; }
+      .err { color: #ff6b6b; }
+      .user { color: #f5c542; }
+      .msg { white-space: pre-wrap; }
+      .input { display: flex; gap: 8px; padding: 12px; border-top: 1px solid var(--border); background: var(--panel2); }
+      .input textarea { flex: 1; min-height: 48px; max-height: 160px; resize: vertical; background: var(--panel); color: var(--text); border: 1px solid var(--btnb); border-radius: 6px; padding: 8px; }
+      .input button { background: var(--accent); color: white; border: 0; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+      .bubble { margin: 8px 0; padding: 8px 10px; border-radius: 6px; }
+      .from-user { background: var(--btn); border: 1px solid var(--btnb); }
+      .from-agent { background: var(--panel); border: 1px solid var(--border); }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.95em; }
+      
+      /* Command Palette & Quick Actions */
+      .command-palette { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--panel); border: 1px solid var(--btnb); border-radius: 8px; width: 90%; max-width: 600px; max-height: 80vh; overflow: hidden; z-index: 1000; display: none; }
+      .command-palette.open { display: block; }
+      .palette-header { padding: 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+      .palette-search { flex: 1; background: var(--bg); border: 1px solid var(--btnb); border-radius: 6px; padding: 8px 12px; color: var(--text); }
+      .palette-body { max-height: 400px; overflow-y: auto; }
+      .command-item { padding: 12px 16px; border-bottom: 1px solid var(--border); cursor: pointer; display: flex; align-items: center; gap: 12px; }
+      .command-item:hover { background: var(--btn); }
+      .command-item .icon { width: 20px; height: 20px; flex-shrink: 0; }
+      .command-item .details { flex: 1; }
+      .command-item .title { font-weight: 500; margin-bottom: 2px; }
+      .command-item .desc { font-size: 0.85em; color: var(--muted); }
+      .command-item .shortcut { font-size: 0.8em; color: var(--muted); background: var(--bg); padding: 2px 6px; border-radius: 4px; }
+      
+      /* Sidebar */
+      .sidebar { width: 300px; background: var(--panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+      .sidebar-header { padding: 12px; border-bottom: 1px solid var(--border); font-weight: 600; }
+      .sidebar-content { flex: 1; overflow-y: auto; }
+      .feature-section { margin: 16px 12px; }
+      .feature-section h4 { margin: 0 0 8px; font-size: 0.9em; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+      
+      /* Quick Actions */
+      .quick-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
+      .quick-btn { padding: 8px 12px; background: var(--btn); border: 1px solid var(--btnb); border-radius: 6px; cursor: pointer; text-align: center; font-size: 0.85em; transition: all 0.2s; }
+      .quick-btn:hover { background: var(--btnb); }
+      .quick-btn .icon { display: block; margin: 0 auto 4px; width: 16px; height: 16px; }
+      
+      /* Model Selector */
+      .model-selector select { width: 100%; padding: 8px; background: var(--bg); border: 1px solid var(--btnb); border-radius: 6px; color: var(--text); }
+      
+      /* Parameters */
+      .param-control { margin-bottom: 12px; }
+      .param-control label { display: block; margin-bottom: 4px; font-size: 0.85em; color: var(--muted); }
+      .param-control input, .param-control select { width: 100%; padding: 6px 8px; background: var(--bg); border: 1px solid var(--btnb); border-radius: 4px; color: var(--text); }
+      .param-control input[type="range"] { accent-color: var(--accent); }
+      .range-value { font-size: 0.8em; color: var(--muted); text-align: right; margin-top: 2px; }
+      
+      /* Overlay */
+      .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 999; display: none; }
+      .overlay.open { display: block; }
+      
+      /* Layout adjustments */
+      .layout { display: flex; height: calc(100vh - 50px); }
+      .main-content { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+      
+      /* Toggle buttons */
+      .toggle-sidebar { display: none; }
+      @media (max-width: 768px) {
+        .sidebar { position: fixed; left: -300px; z-index: 100; height: 100%; transition: left 0.3s; }
+        .sidebar.open { left: 0; }
+        .toggle-sidebar { display: inline-flex; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div>
+          <button id="toggleSidebar" class="toggle-sidebar" title="Toggle sidebar" style="background:transparent; border:1px solid var(--btnb); border-radius:4px; cursor:pointer; width:32px; height:32px; display:inline-flex; align-items:center; justify-content:center; color:var(--text); margin-right:8px;">
+            ☰
+          </button>
+          <span id="connDot" class="dot warn"></span>Gemini WebUI
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <button id="commandPalette" title="Command Palette (Ctrl+K)" style="background:var(--btn); border:1px solid var(--btnb); border-radius:4px; cursor:pointer; padding:6px 10px; color:var(--text); font-size:0.85em;">⌘K</button>
+          <button id="themeToggle" title="Toggle theme" style="background:transparent; border:0; cursor:pointer; width:32px; height:32px; display:inline-flex; align-items:center; justify-content:center; color:var(--text);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 12.5A9 9 0 1 1 11.5 3 7 7 0 0 0 21 12.5z" stroke="currentColor" stroke-width="1.6"/></svg>
+          </button>
+        </div>
+      </header>
+      <div class="layout">
+        <aside id="sidebar" class="sidebar">
+          <div class="sidebar-header">
+            🤖 Gemini Controls
+          </div>
+          <div class="sidebar-content">
+            <div class="feature-section">
+              <h4>Model</h4>
+              <div class="model-selector">
+                <select id="modelSelect">
+                  <option value="gemini-pro">Gemini Pro</option>
+                  <option value="gemini-pro-vision">Gemini Pro Vision</option>
+                  <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                  <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="feature-section">
+              <h4>Parameters</h4>
+              <div class="param-control">
+                <label for="temperature">Temperature</label>
+                <input type="range" id="temperature" min="0" max="2" step="0.1" value="0.7">
+                <div class="range-value" id="tempValue">0.7</div>
+              </div>
+              <div class="param-control">
+                <label for="maxTokens">Max Tokens</label>
+                <input type="number" id="maxTokens" min="1" max="8192" value="1024">
+              </div>
+              <div class="param-control">
+                <label for="topP">Top P</label>
+                <input type="range" id="topP" min="0" max="1" step="0.05" value="0.9">
+                <div class="range-value" id="topPValue">0.9</div>
+              </div>
+            </div>
+            
+            <div class="feature-section">
+              <h4>Quick Actions</h4>
+              <div class="quick-actions">
+                <div class="quick-btn" data-action="explain">
+                  <div class="icon">💡</div>
+                  <div>Explain</div>
+                </div>
+                <div class="quick-btn" data-action="summarize">
+                  <div class="icon">📄</div>
+                  <div>Summarize</div>
+                </div>
+                <div class="quick-btn" data-action="translate">
+                  <div class="icon">🌐</div>
+                  <div>Translate</div>
+                </div>
+                <div class="quick-btn" data-action="code">
+                  <div class="icon">💻</div>
+                  <div>Code Help</div>
+                </div>
+                <div class="quick-btn" data-action="creative">
+                  <div class="icon">✨</div>
+                  <div>Creative</div>
+                </div>
+                <div class="quick-btn" data-action="analyze">
+                  <div class="icon">🔍</div>
+                  <div>Analyze</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="feature-section">
+              <h4>System</h4>
+              <button id="restart" style="width:100%; padding:8px; background:var(--btn); border:1px solid var(--btnb); border-radius:6px; color:var(--text); cursor:pointer;">🔄 Restart AI</button>
+            </div>
+          </div>
+        </aside>
+        
+        <main class="main-content">
+          <div class="toolbar">
+            <div id="status" class="mono" style="opacity:.85"></div>
+          </div>
+          <div id="log"></div>
+          <div class="input">
+            <textarea id="text" placeholder="Type your message or use Ctrl+K for commands…"></textarea>
+            <button id="send" title="Enter to send, Shift+Enter for newline">Send</button>
+          </div>
+        </main>
+      </div>
+    </div>
+    
+    <!-- Command Palette -->
+    <div id="overlay" class="overlay"></div>
+    <div id="commandPaletteModal" class="command-palette">
+      <div class="palette-header">
+        <input type="text" id="paletteSearch" class="palette-search" placeholder="Search commands..." autocomplete="off">
+        <button id="closePalette" style="background:transparent; border:0; color:var(--text); cursor:pointer; padding:4px;">✕</button>
+      </div>
+      <div class="palette-body" id="paletteBody">
+        <!-- Commands will be populated by JavaScript -->
+      </div>
+    </div>
+
+    <script>
+      // DOM Elements
+      const log = document.getElementById('log');
+      const text = document.getElementById('text');
+      const send = document.getElementById('send');
+      const statusEl = document.getElementById('status');
+      const themeToggle = document.getElementById('themeToggle');
+      const connDot = document.getElementById('connDot');
+      const restartBtn = document.getElementById('restart');
+      const sidebar = document.getElementById('sidebar');
+      const toggleSidebar = document.getElementById('toggleSidebar');
+      const commandPaletteBtn = document.getElementById('commandPalette');
+      const commandPaletteModal = document.getElementById('commandPaletteModal');
+      const overlay = document.getElementById('overlay');
+      const paletteSearch = document.getElementById('paletteSearch');
+      const paletteBody = document.getElementById('paletteBody');
+      const closePalette = document.getElementById('closePalette');
+      
+      // Model and parameter controls
+      const modelSelect = document.getElementById('modelSelect');
+      const temperatureSlider = document.getElementById('temperature');
+      const tempValue = document.getElementById('tempValue');
+      const maxTokens = document.getElementById('maxTokens');
+      const topPSlider = document.getElementById('topP');
+      const topPValue = document.getElementById('topPValue');
+      
+      // Current settings
+      let currentSettings = {
+        model: 'gemini-pro',
+        temperature: 0.7,
+        maxTokens: 1024,
+        topP: 0.9
+      };
+      
+      // Command definitions
+      const commands = [
+        { id: 'explain', title: 'Explain', desc: 'Ask Gemini to explain something', icon: '💡', category: 'general' },
+        { id: 'summarize', title: 'Summarize', desc: 'Get a summary of text or content', icon: '📄', category: 'general' },
+        { id: 'translate', title: 'Translate', desc: 'Translate text to another language', icon: '🌐', category: 'language' },
+        { id: 'code-review', title: 'Code Review', desc: 'Review and analyze code', icon: '🔍', category: 'code' },
+        { id: 'code-debug', title: 'Debug Code', desc: 'Help debug programming issues', icon: '🐛', category: 'code' },
+        { id: 'code-optimize', title: 'Optimize Code', desc: 'Suggest code optimizations', icon: '⚡', category: 'code' },
+        { id: 'write-docs', title: 'Write Documentation', desc: 'Generate documentation for code', icon: '📚', category: 'code' },
+        { id: 'creative-write', title: 'Creative Writing', desc: 'Help with creative writing tasks', icon: '✍️', category: 'creative' },
+        { id: 'brainstorm', title: 'Brainstorm Ideas', desc: 'Generate creative ideas', icon: '🧠', category: 'creative' },
+        { id: 'analyze-data', title: 'Analyze Data', desc: 'Help analyze and interpret data', icon: '📊', category: 'analysis' },
+        { id: 'research', title: 'Research Topic', desc: 'Research and provide information', icon: '🔬', category: 'analysis' },
+        { id: 'model-switch', title: 'Switch Model', desc: 'Change the current AI model', icon: '🔄', category: 'settings' },
+        { id: 'clear-chat', title: 'Clear Chat', desc: 'Clear the conversation history', icon: '🗑️', category: 'settings' },
+        { id: 'export-chat', title: 'Export Chat', desc: 'Export conversation to file', icon: '💾', category: 'settings' }
+      ];
+      
+      function addBubble(html, cls = '') {
+        const el = document.createElement('div');
+        el.className = `bubble ${cls}`;
+        el.innerHTML = html;
+        log.appendChild(el);
+        log.scrollTop = log.scrollHeight;
+      }
+
+      function escapeHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+
+      async function sendMessage(message = null) {
+        const msgText = message || text.value.trim();
+        if (!msgText) return;
+        
+        addBubble(escapeHtml(msgText), 'from-user');
+        if (!message) text.value = '';
+        
+        try {
+          await fetch('/message', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: msgText })
+          });
+        } catch (err) {
+          addBubble(`Error sending message: ${err.message}`, 'err');
+        }
+      }
+
+      async function restartAI() {
+        try {
+          await fetch('/restart', { method: 'POST' });
+          addBubble('🔄 AI restarted', 'sys');
+        } catch (err) {
+          addBubble(`Error restarting: ${err.message}`, 'err');
+        }
+      }
+      
+      // Command Palette Functions
+      function openCommandPalette() {
+        overlay.classList.add('open');
+        commandPaletteModal.classList.add('open');
+        paletteSearch.focus();
+        renderCommands('');
+      }
+      
+      function closeCommandPalette() {
+        overlay.classList.remove('open');
+        commandPaletteModal.classList.remove('open');
+        paletteSearch.value = '';
+      }
+      
+      function renderCommands(filter = '') {
+        const filtered = commands.filter(cmd => 
+          cmd.title.toLowerCase().includes(filter.toLowerCase()) ||
+          cmd.desc.toLowerCase().includes(filter.toLowerCase()) ||
+          cmd.category.toLowerCase().includes(filter.toLowerCase())
+        );
+        
+        paletteBody.innerHTML = filtered.map(cmd => `
+          <div class="command-item" data-command="${cmd.id}">
+            <div class="icon">${cmd.icon}</div>
+            <div class="details">
+              <div class="title">${cmd.title}</div>
+              <div class="desc">${cmd.desc}</div>
+            </div>
+          </div>
+        `).join('');
+        
+        // Add click listeners
+        paletteBody.querySelectorAll('.command-item').forEach(item => {
+          item.addEventListener('click', () => {
+            executeCommand(item.dataset.command);
+            closeCommandPalette();
+          });
+        });
+      }
+      
+      function executeCommand(cmdId) {
+        const prompts = {
+          'explain': 'Please explain: ',
+          'summarize': 'Please summarize: ',
+          'translate': 'Please translate the following text to English: ',
+          'code-review': 'Please review this code and provide feedback: ',
+          'code-debug': 'Help me debug this code: ',
+          'code-optimize': 'Please optimize this code: ',
+          'write-docs': 'Write documentation for this code: ',
+          'creative-write': 'Help me with creative writing: ',
+          'brainstorm': 'Help me brainstorm ideas for: ',
+          'analyze-data': 'Please analyze this data: ',
+          'research': 'Please research and provide information about: '
+        };
+        
+        if (prompts[cmdId]) {
+          text.value = prompts[cmdId];
+          text.focus();
+          text.setSelectionRange(prompts[cmdId].length, prompts[cmdId].length);
+        } else if (cmdId === 'clear-chat') {
+          if (confirm('Clear all chat messages?')) {
+            log.innerHTML = '';
+          }
+        } else if (cmdId === 'export-chat') {
+          exportChat();
+        } else if (cmdId === 'model-switch') {
+          // Focus model selector
+          modelSelect.focus();
+        }
+      }
+      
+      function exportChat() {
+        const messages = Array.from(log.querySelectorAll('.bubble')).map(bubble => {
+          const isUser = bubble.classList.contains('from-user');
+          const isSystem = bubble.classList.contains('sys');
+          const text = bubble.textContent;
+          return `${isUser ? 'User' : isSystem ? 'System' : 'Gemini'}: ${text}`;
+        }).join('\n\n');
+        
+        const blob = new Blob([messages], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `gemini-chat-${new Date().toISOString().slice(0,10)}.txt`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+      
+      // Quick Action handlers
+      function setupQuickActions() {
+        document.querySelectorAll('.quick-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const action = btn.dataset.action;
+            executeCommand(action);
+          });
+        });
+      }
+      
+      // Parameter updates
+      function updateParameters() {
+        temperatureSlider.addEventListener('input', (e) => {
+          const value = parseFloat(e.target.value);
+          tempValue.textContent = value;
+          currentSettings.temperature = value;
+        });
+        
+        topPSlider.addEventListener('input', (e) => {
+          const value = parseFloat(e.target.value);
+          topPValue.textContent = value;
+          currentSettings.topP = value;
+        });
+        
+        maxTokens.addEventListener('change', (e) => {
+          currentSettings.maxTokens = parseInt(e.target.value);
+        });
+        
+        modelSelect.addEventListener('change', (e) => {
+          currentSettings.model = e.target.value;
+          addBubble(`Model changed to: ${e.target.value}`, 'sys');
+        });
+      }
+
+      // Event listeners
+      send.addEventListener('click', () => sendMessage());
+      restartBtn.addEventListener('click', restartAI);
+      
+      text.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+      
+      // Command palette
+      commandPaletteBtn.addEventListener('click', openCommandPalette);
+      closePalette.addEventListener('click', closeCommandPalette);
+      overlay.addEventListener('click', closeCommandPalette);
+      
+      paletteSearch.addEventListener('input', (e) => {
+        renderCommands(e.target.value);
+      });
+      
+      paletteSearch.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          closeCommandPalette();
+        } else if (e.key === 'Enter') {
+          const firstCommand = paletteBody.querySelector('.command-item');
+          if (firstCommand) {
+            executeCommand(firstCommand.dataset.command);
+            closeCommandPalette();
+          }
+        }
+      });
+      
+      // Global keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+          e.preventDefault();
+          openCommandPalette();
+        }
+      });
+      
+      // Sidebar toggle
+      toggleSidebar?.addEventListener('click', () => {
+        sidebar.classList.toggle('open');
+      });
+
+      themeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('light');
+        localStorage.setItem('theme', document.body.classList.contains('light') ? 'light' : 'dark');
+      });
+
+      // Load saved theme
+      if (localStorage.getItem('theme') === 'light') {
+        document.body.classList.add('light');
+      }
+
+      // SSE connection
+      let eventSource = null;
+      
+      function connectSSE() {
+        if (eventSource) eventSource.close();
+        
+        eventSource = new EventSource('/events');
+        
+        eventSource.onopen = () => {
+          connDot.className = 'dot ok';
+          console.log('SSE connected');
+        };
+        
+        eventSource.onerror = () => {
+          connDot.className = 'dot err';
+          console.log('SSE error, reconnecting...');
+          setTimeout(connectSSE, 2000);
+        };
+        
+        eventSource.addEventListener('status', (e) => {
+          const data = JSON.parse(e.data);
+          statusEl.textContent = `${data.ai_cmd} ${(data.args || []).join(' ')} ${data.running ? '(running)' : '(stopped)'}`;
+        });
+        
+        eventSource.addEventListener('system', (e) => {
+          const data = JSON.parse(e.data);
+          addBubble(escapeHtml(data.text), 'sys');
+        });
+        
+        eventSource.addEventListener('user', (e) => {
+          // User messages already shown when sent
+        });
+        
+        eventSource.addEventListener('message', (e) => {
+          const data = JSON.parse(e.data);
+          addBubble(escapeHtml(data.text), 'from-agent msg');
+        });
+        
+        eventSource.addEventListener('error', (e) => {
+          const data = JSON.parse(e.data);
+          addBubble(escapeHtml(data.text), 'err');
+        });
+      }
+
+      // Initialize
+      connectSSE();
+      setupQuickActions();
+      updateParameters();
+      text.focus();
+      
+      // Welcome message
+      setTimeout(() => {
+        addBubble('🤖 Gemini WebUI ready! Use Ctrl+K to open the command palette or click the quick action buttons.', 'sys');
+        document.body.classList.add('ready');
+      }, 100);
+    </script>
+  </body>
+</html>
