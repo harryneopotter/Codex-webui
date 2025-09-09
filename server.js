@@ -5,11 +5,16 @@
 // - Uses SSE to stream Codex output
 // - Launches/keeps a single Codex session, supports multiple messages
 
-const http = require('http');
-const fs = require('fs');
-const path = require('path');
-const { spawn } = require('child_process');
-const os = require('os');
+import http from 'http';
+import fs from 'fs';
+import path from 'path';
+import { spawn } from 'child_process';
+import os from 'os';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // ROADMAP (server-side) — implementation notes
 // - Session search/filters: extend GET /sessions to accept query params like

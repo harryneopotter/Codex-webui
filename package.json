@@ -1,0 +1,32 @@
+{
+  "name": "codex-webui",
+  "version": "1.0.0",
+  "description": "A tiny, dependency-free Web UI that wraps the local OpenAI Codex CLI",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test tests/*.test.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": [
+    "codex",
+    "webui",
+    "openai",
+    "cli",
+    "wrapper"
+  ],
+  "author": "HarryNeoPotter",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/harryneopotter/Codex-webui.git"
+  },
+  "homepage": "https://github.com/harryneopotter/Codex-webui#readme",
+  "bugs": {
+    "url": "https://github.com/harryneopotter/Codex-webui/issues"
+  }
+}

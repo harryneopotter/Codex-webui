@@ -15,15 +15,50 @@ The Codex terminal can get messy (scrollback/overwrites). This provides a clean 
 - ⚙️ Config UI for model / approval / sandbox / extras
 - 🛡️ Optional bearer token for mutating routes
 
-## Quick start
+## Installation
 
+### Prerequisites
+- Node.js 18+ installed on your system
+- OpenAI Codex CLI installed and configured
+
+### Setup
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/harryneopotter/Codex-webui.git
+   cd Codex-webui
+   ```
+
+2. **Install dependencies (optional - this project is dependency-free):**
+   ```bash
+   npm install  # Only needed for development scripts
+   ```
+
+3. **Configure environment (optional):**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your preferences
+   ```
+
+## Quick Start
+
+### Method 1: Using npm scripts
+```bash
+npm start
+# or for development with auto-reload:
+npm run dev
+```
+
+### Method 2: Direct node execution
 ```bash
 # 1) Run the server (default binds to loopback)
 HOST=127.0.0.1 PORT=5055 node server.js
 
 # 2) Open the UI
 open http://127.0.0.1:5055   # macOS
-# or
+# Windows:
+start http://127.0.0.1:5055
+# Linux:
 xdg-open http://127.0.0.1:5055
 ```
 
