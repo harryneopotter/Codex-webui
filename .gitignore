@@ -1,0 +1,15 @@
+# dependencies
+node_modules/
+
+
+# env
+.env
+
+
+# logs
+*.log
+
+
+# Codex history/memory
+codex-webui/history.json
+.codex/
