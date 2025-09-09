@@ -7,6 +7,14 @@ A tiny, dependency‑free Web UI that wraps the local **OpenAI Codex CLI**. It s
 ## Why
 The Codex terminal can get messy (scrollback/overwrites). This provides a clean browser UI with streaming, resume, and small quality‑of‑life tools.
 
+## Screenshots
+
+### Dark Theme
+![Codex WebUI - Dark Theme](assets/webui-dark.jpg)
+
+### Light Theme
+![Codex WebUI - Light Theme](assets/webui-light.jpg)
+
 ## Features
 - 🔌 **Local only**: spawns your `codex` binary
 - 📡 **SSE streaming** with connection status
