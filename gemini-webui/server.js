@@ -18,13 +18,15 @@ const HOST = process.env.HOST || '127.0.0.1';
 const TOKEN = process.env.WEBUI_TOKEN || '';
 const ALLOW_ORIGIN = process.env.ALLOW_ORIGIN || `http://localhost:${PORT}`;
 
-// Generic AI CLI settings
-const AI_CMD = process.env.AI_CMD || 'gemini-cli';
+// Real Gemini CLI settings
+const AI_CMD = process.env.AI_CMD || 'gemini';
 const AI_ARGS = process.env.AI_ARGS ? process.env.AI_ARGS.split(' ') : [];
 
-// Current AI settings
+// Current AI settings (Note: Real Gemini CLI uses built-in model selection)
 let currentConfig = {
-  model: process.env.GEMINI_MODEL || 'gemini-pro',
+  model: process.env.GEMINI_MODEL || 'gemini-2.5-pro',
+  // Note: Gemini CLI handles temperature/tokens internally
+  // These are kept for WebUI compatibility but may not affect actual CLI
   temperature: parseFloat(process.env.GEMINI_TEMPERATURE || '0.7'),
   maxTokens: parseInt(process.env.GEMINI_MAX_TOKENS || '1024'),
   topP: parseFloat(process.env.GEMINI_TOP_P || '0.9')
@@ -61,20 +63,20 @@ setInterval(() => {
 function startAI() {
   if (aiProc) return;
   
-  broadcast('system', { text: `Starting ${AI_CMD} with model ${currentConfig.model}...` });
+  broadcast('system', { text: `Starting Gemini CLI...` });
   
-  // Build args with current configuration
+  // Build args for real Gemini CLI
   const args = [
     ...AI_ARGS,
-    '--model', currentConfig.model,
-    '--temperature', currentConfig.temperature.toString(),
-    '--max-tokens', currentConfig.maxTokens.toString(),
-    '--top-p', currentConfig.topP.toString()
+    // Use -m flag for model selection as per Gemini CLI docs
+    '-m', currentConfig.model,
+    // Add any additional args from environment
   ].filter(arg => arg !== '');
   
   aiProc = spawn(AI_CMD, args, { 
     stdio: ['pipe', 'pipe', 'pipe'],
-    shell: true 
+    shell: false,  // Gemini CLI doesn't need shell
+    cwd: process.cwd()
   });
 
   aiProc.stdout.setEncoding('utf8');

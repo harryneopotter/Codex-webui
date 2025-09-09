@@ -112,10 +112,12 @@
               <h4>Model</h4>
               <div class="model-selector">
                 <select id="modelSelect">
-                  <option value="gemini-pro">Gemini Pro</option>
-                  <option value="gemini-pro-vision">Gemini Pro Vision</option>
+                  <option value="gemini-2.5-pro">Gemini 2.5 Pro (Latest)</option>
+                  <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
                   <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
                   <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                  <option value="gemini-pro">Gemini Pro</option>
+                  <option value="gemini-pro-vision">Gemini Pro Vision</option>
                 </select>
               </div>
             </div>
@@ -141,29 +143,51 @@
             <div class="feature-section">
               <h4>Quick Actions</h4>
               <div class="quick-actions">
-                <div class="quick-btn" data-action="explain">
-                  <div class="icon">💡</div>
-                  <div>Explain</div>
+                <div class="quick-btn" data-action="help">
+                  <div class="icon">❓</div>
+                  <div>/help</div>
                 </div>
-                <div class="quick-btn" data-action="summarize">
+                <div class="quick-btn" data-action="tools">
+                  <div class="icon">🔧</div>
+                  <div>/tools</div>
+                </div>
+                <div class="quick-btn" data-action="stats">
+                  <div class="icon">📊</div>
+                  <div>/stats</div>
+                </div>
+                <div class="quick-btn" data-action="memory-show">
+                  <div class="icon">🧠</div>
+                  <div>/memory</div>
+                </div>
+                <div class="quick-btn" data-action="file-inject">
                   <div class="icon">📄</div>
-                  <div>Summarize</div>
+                  <div>@file</div>
                 </div>
-                <div class="quick-btn" data-action="translate">
-                  <div class="icon">🌐</div>
-                  <div>Translate</div>
-                </div>
-                <div class="quick-btn" data-action="code">
+                <div class="quick-btn" data-action="shell-cmd">
                   <div class="icon">💻</div>
-                  <div>Code Help</div>
+                  <div>!shell</div>
                 </div>
-                <div class="quick-btn" data-action="creative">
-                  <div class="icon">✨</div>
-                  <div>Creative</div>
+              </div>
+            </div>
+            
+            <div class="feature-section">
+              <h4>Chat Checkpoints</h4>
+              <div class="param-control">
+                <label for="checkpointTag">Checkpoint Tag</label>
+                <input type="text" id="checkpointTag" placeholder="my-tag" style="margin-bottom:8px;">
+              </div>
+              <div class="quick-actions">
+                <div class="quick-btn" data-action="chat-save" title="Save current conversation">
+                  <div class="icon">💾</div>
+                  <div>Save</div>
                 </div>
-                <div class="quick-btn" data-action="analyze">
-                  <div class="icon">🔍</div>
-                  <div>Analyze</div>
+                <div class="quick-btn" data-action="chat-resume" title="Resume saved conversation">
+                  <div class="icon">▶️</div>
+                  <div>Resume</div>
+                </div>
+                <div class="quick-btn" data-action="chat-list" title="List available checkpoints">
+                  <div class="icon">📋</div>
+                  <div>List</div>
                 </div>
               </div>
             </div>
@@ -234,22 +258,64 @@
         topP: 0.9
       };
       
-      // Command definitions
+      // Real Gemini CLI Commands
       const commands = [
-        { id: 'explain', title: 'Explain', desc: 'Ask Gemini to explain something', icon: '💡', category: 'general' },
-        { id: 'summarize', title: 'Summarize', desc: 'Get a summary of text or content', icon: '📄', category: 'general' },
-        { id: 'translate', title: 'Translate', desc: 'Translate text to another language', icon: '🌐', category: 'language' },
-        { id: 'code-review', title: 'Code Review', desc: 'Review and analyze code', icon: '🔍', category: 'code' },
-        { id: 'code-debug', title: 'Debug Code', desc: 'Help debug programming issues', icon: '🐛', category: 'code' },
-        { id: 'code-optimize', title: 'Optimize Code', desc: 'Suggest code optimizations', icon: '⚡', category: 'code' },
-        { id: 'write-docs', title: 'Write Documentation', desc: 'Generate documentation for code', icon: '📚', category: 'code' },
-        { id: 'creative-write', title: 'Creative Writing', desc: 'Help with creative writing tasks', icon: '✍️', category: 'creative' },
-        { id: 'brainstorm', title: 'Brainstorm Ideas', desc: 'Generate creative ideas', icon: '🧠', category: 'creative' },
-        { id: 'analyze-data', title: 'Analyze Data', desc: 'Help analyze and interpret data', icon: '📊', category: 'analysis' },
-        { id: 'research', title: 'Research Topic', desc: 'Research and provide information', icon: '🔬', category: 'analysis' },
-        { id: 'model-switch', title: 'Switch Model', desc: 'Change the current AI model', icon: '🔄', category: 'settings' },
-        { id: 'clear-chat', title: 'Clear Chat', desc: 'Clear the conversation history', icon: '🗑️', category: 'settings' },
-        { id: 'export-chat', title: 'Export Chat', desc: 'Export conversation to file', icon: '💾', category: 'settings' }
+        // Slash Commands
+        { id: 'help', title: '/help', desc: 'Show help and available commands', icon: '❓', category: 'meta' },
+        { id: 'clear', title: '/clear', desc: 'Clear terminal screen (Ctrl+L)', icon: '🧽', category: 'meta' },
+        { id: 'stats', title: '/stats', desc: 'Show session statistics and token usage', icon: '📊', category: 'meta' },
+        { id: 'about', title: '/about', desc: 'Show version and system information', icon: 'ℹ️', category: 'meta' },
+        { id: 'quit', title: '/quit', desc: 'Exit Gemini CLI', icon: '🚪', category: 'meta' },
+        
+        // Chat Management
+        { id: 'chat-save', title: '/chat save', desc: 'Save current conversation with a tag', icon: '💾', category: 'chat' },
+        { id: 'chat-resume', title: '/chat resume', desc: 'Resume a saved conversation', icon: '▶️', category: 'chat' },
+        { id: 'chat-list', title: '/chat list', desc: 'List available chat checkpoints', icon: '📋', category: 'chat' },
+        { id: 'chat-delete', title: '/chat delete', desc: 'Delete a saved conversation', icon: '🗑️', category: 'chat' },
+        { id: 'compress', title: '/compress', desc: 'Replace chat context with summary', icon: '🗜', category: 'chat' },
+        { id: 'copy', title: '/copy', desc: 'Copy last output to clipboard', icon: '📋', category: 'chat' },
+        
+        // Memory & Context
+        { id: 'memory-show', title: '/memory show', desc: 'Display current AI memory (GEMINI.md)', icon: '🧠', category: 'memory' },
+        { id: 'memory-add', title: '/memory add', desc: 'Add text to AI memory', icon: '📝', category: 'memory' },
+        { id: 'memory-refresh', title: '/memory refresh', desc: 'Reload memory from GEMINI.md files', icon: '🔄', category: 'memory' },
+        { id: 'init', title: '/init', desc: 'Create a GEMINI.md context file', icon: '📄', category: 'memory' },
+        
+        // Tools & Extensions
+        { id: 'tools', title: '/tools', desc: 'List available tools', icon: '🔧', category: 'tools' },
+        { id: 'tools-desc', title: '/tools desc', desc: 'Show tools with descriptions', icon: '📝', category: 'tools' },
+        { id: 'mcp', title: '/mcp', desc: 'List MCP servers and tools', icon: '🔌', category: 'tools' },
+        { id: 'extensions', title: '/extensions', desc: 'List active extensions', icon: '🧩', category: 'tools' },
+        
+        // Directory Management
+        { id: 'dir-add', title: '/directory add', desc: 'Add directory to workspace', icon: '📁', category: 'workspace' },
+        { id: 'dir-show', title: '/directory show', desc: 'Show workspace directories', icon: '📂', category: 'workspace' },
+        
+        // Configuration
+        { id: 'settings', title: '/settings', desc: 'Open settings editor', icon: '⚙️', category: 'config' },
+        { id: 'theme', title: '/theme', desc: 'Change visual theme', icon: '🎨', category: 'config' },
+        { id: 'auth', title: '/auth', desc: 'Change authentication method', icon: '🔐', category: 'config' },
+        { id: 'editor', title: '/editor', desc: 'Select external editor', icon: '📝', category: 'config' },
+        { id: 'vim', title: '/vim', desc: 'Toggle vim mode', icon: '⌨️', category: 'config' },
+        
+        // File Operations
+        { id: 'restore', title: '/restore', desc: 'Restore files to previous state', icon: '⏪', category: 'files' },
+        
+        // Support
+        { id: 'bug', title: '/bug', desc: 'Report a bug or issue', icon: '🐛', category: 'support' },
+        { id: 'privacy', title: '/privacy', desc: 'Show privacy settings', icon: '🔒', category: 'support' },
+        
+        // File Injection (@)
+        { id: 'file-inject', title: '@file.txt', desc: 'Include file content in prompt', icon: '📄', category: 'files' },
+        { id: 'dir-inject', title: '@directory/', desc: 'Include directory contents in prompt', icon: '📁', category: 'files' },
+        
+        // Shell Commands (!)
+        { id: 'shell-cmd', title: '!command', desc: 'Execute shell command', icon: '💻', category: 'shell' },
+        { id: 'shell-mode', title: '! (toggle)', desc: 'Toggle shell mode', icon: '📟', category: 'shell' },
+        
+        // WebUI Specific
+        { id: 'export-chat', title: 'Export Chat', desc: 'Export conversation to file', icon: '💾', category: 'webui' },
+        { id: 'clear-webui', title: 'Clear Display', desc: 'Clear WebUI chat display', icon: '🧽', category: 'webui' }
       ];
       
       function addBubble(html, cls = '') {
@@ -330,33 +396,80 @@
       }
       
       function executeCommand(cmdId) {
-        const prompts = {
-          'explain': 'Please explain: ',
-          'summarize': 'Please summarize: ',
-          'translate': 'Please translate the following text to English: ',
-          'code-review': 'Please review this code and provide feedback: ',
-          'code-debug': 'Help me debug this code: ',
-          'code-optimize': 'Please optimize this code: ',
-          'write-docs': 'Write documentation for this code: ',
-          'creative-write': 'Help me with creative writing: ',
-          'brainstorm': 'Help me brainstorm ideas for: ',
-          'analyze-data': 'Please analyze this data: ',
-          'research': 'Please research and provide information about: '
+        // Handle slash commands that should be sent directly to Gemini CLI
+        const directCommands = {
+          'help': '/help',
+          'clear': '/clear',
+          'stats': '/stats',
+          'about': '/about',
+          'quit': '/quit',
+          'chat-save': '/chat save ',
+          'chat-resume': '/chat resume ',
+          'chat-list': '/chat list',
+          'chat-delete': '/chat delete ',
+          'compress': '/compress',
+          'copy': '/copy',
+          'memory-show': '/memory show',
+          'memory-add': '/memory add ',
+          'memory-refresh': '/memory refresh',
+          'init': '/init',
+          'tools': '/tools',
+          'tools-desc': '/tools desc',
+          'mcp': '/mcp',
+          'extensions': '/extensions',
+          'dir-add': '/directory add ',
+          'dir-show': '/directory show',
+          'settings': '/settings',
+          'theme': '/theme',
+          'auth': '/auth',
+          'editor': '/editor',
+          'vim': '/vim',
+          'restore': '/restore',
+          'bug': '/bug ',
+          'privacy': '/privacy'
         };
         
-        if (prompts[cmdId]) {
-          text.value = prompts[cmdId];
+        // Handle prompt templates for @ and ! commands
+        const promptTemplates = {
+          'file-inject': '@',
+          'dir-inject': '@',
+          'shell-cmd': '!',
+          'shell-mode': '!'
+        };
+        
+        if (directCommands[cmdId]) {
+          let command = directCommands[cmdId];
+          
+          // Handle chat commands that need tags
+          if (cmdId.startsWith('chat-') && (cmdId === 'chat-save' || cmdId === 'chat-resume' || cmdId === 'chat-delete')) {
+            const checkpointTag = document.getElementById('checkpointTag')?.value.trim();
+            if (checkpointTag) {
+              command += checkpointTag;
+            } else if (cmdId === 'chat-save' || cmdId === 'chat-resume' || cmdId === 'chat-delete') {
+              // Prompt for tag if not provided
+              const tag = prompt(`Enter ${cmdId === 'chat-save' ? 'tag to save as' : cmdId === 'chat-resume' ? 'tag to resume' : 'tag to delete'}:`);
+              if (tag) {
+                command += tag.trim();
+              } else {
+                return; // Cancel if no tag provided
+              }
+            }
+          }
+          
+          text.value = command;
           text.focus();
-          text.setSelectionRange(prompts[cmdId].length, prompts[cmdId].length);
-        } else if (cmdId === 'clear-chat') {
-          if (confirm('Clear all chat messages?')) {
+          text.setSelectionRange(command.length, command.length);
+        } else if (promptTemplates[cmdId]) {
+          text.value = promptTemplates[cmdId];
+          text.focus();
+          text.setSelectionRange(promptTemplates[cmdId].length, promptTemplates[cmdId].length);
+        } else if (cmdId === 'clear-webui') {
+          if (confirm('Clear all chat messages from display?')) {
             log.innerHTML = '';
+            addBubble('🧽 Display cleared', 'sys');
           }
         } else if (cmdId === 'export-chat') {
           exportChat();
-        } else if (cmdId === 'model-switch') {
-          // Focus model selector
-          modelSelect.focus();
         }
       }
       

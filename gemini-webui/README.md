@@ -1,16 +1,18 @@
-# Gemini WebUI
+# Gemini CLI WebUI
 
-An enhanced, dependency-free Web UI specifically designed for Google's Gemini CLI. Features a powerful command palette, model switching, parameter controls, and quick action buttons to help you utilize Gemini's full potential without memorizing commands.
+A powerful, dependency-free Web UI wrapper for Google's official Gemini CLI. This interface brings the full power of Gemini CLI's slash commands, file injection, shell integration, and chat checkpointing to an intuitive browser-based interface.
 
-> **Enhanced Features**: Unlike the generic AI WebUI, this version includes Gemini-specific optimizations, an intelligent command palette, real-time parameter adjustment, and pre-configured prompts for common tasks.
+> **Real Gemini CLI Integration**: This WebUI provides a complete interface to the actual Gemini CLI, supporting all slash commands (/help, /chat, /tools, /memory, etc.), @ file injection, ! shell commands, and MCP server integration - no command memorization required!
 
 ## Features
 
-### 🎯 **Gemini-Optimized**
-- 🤖 **Model Selection**: Switch between Gemini Pro, Pro Vision, 1.5 Pro, and 1.5 Flash
-- ⚙️ **Real-time Parameters**: Adjust temperature, max tokens, and top-p on the fly
-- 🎨 **Smart Prompts**: Pre-configured prompts for common tasks (explain, summarize, code, etc.)
-- ⌘ **Command Palette**: Quick access to all features with Ctrl+K
+### 🤖 **Real Gemini CLI Integration**
+- 🚀 **Official Gemini CLI**: Direct integration with Google's Gemini CLI
+- 🎯 **Full Command Support**: All slash commands (/help, /chat, /tools, /memory, etc.)
+- 📄 **File Injection**: @ commands to include files and directories in prompts
+- 💻 **Shell Integration**: ! commands for direct shell access
+- 🧠 **Memory Management**: GEMINI.md context files and hierarchical memory
+- ⚙️ **Model Selection**: Gemini 2.5 Pro, 2.5 Flash, 1.5 Pro, 1.5 Flash
 
 ### 🚀 **Powerful UI**
 - 📡 **SSE Streaming**: Real-time response streaming
@@ -29,23 +31,43 @@ An enhanced, dependency-free Web UI specifically designed for Google's Gemini CL
 
 ### 🚀 **Easy Setup**
 
-1. **Install Gemini CLI** (if not already installed)
+1. **Install Gemini CLI**
    ```bash
-   # Follow Google's official Gemini CLI installation guide
-   # Make sure 'gemini' or 'gemini-cli' is in your PATH
+   # Install globally with npm
+   npm install -g @google/gemini-cli
+   
+   # Or with Homebrew (macOS/Linux)
+   brew install gemini-cli
+   
+   # Or run instantly with npx
+   npx https://github.com/google-gemini/gemini-cli
    ```
 
-2. **Start the WebUI**
+2. **Set up Authentication** (Choose one)
+   ```bash
+   # Option 1: API Key (get from https://aistudio.google.com/apikey)
+   export GEMINI_API_KEY="your_api_key_here"
+   
+   # Option 2: OAuth (will open browser)
+   # Just run 'gemini' and follow the prompts
+   
+   # Option 3: Vertex AI
+   export GOOGLE_API_KEY="your_vertex_ai_key"
+   export GOOGLE_GENAI_USE_VERTEXAI=true
+   ```
+
+3. **Start the WebUI**
    ```bash
    cd gemini-webui
    node server.js
    # Open http://127.0.0.1:5056
    ```
 
-3. **Start chatting!** 🎉
-   - Use the sidebar to adjust model and parameters
-   - Try **Ctrl+K** to open the command palette
-   - Click the quick action buttons for common tasks
+4. **Start using Gemini!** 🎉
+   - Use **Ctrl+K** to open the command palette
+   - Try `/help` to see all available commands
+   - Use `@filename.txt` to include files in your prompts
+   - Use `!ls` or toggle shell mode for system commands
 
 ### ⚙️ **Custom Configuration**
 
