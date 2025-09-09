@@ -13,3 +13,6 @@ node_modules/
 # Codex history/memory
 codex-webui/history.json
 .codex/
+
+# Old readme file (keep local only)
+README-old.md
