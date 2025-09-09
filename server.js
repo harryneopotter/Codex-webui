@@ -12,7 +12,6 @@ import { spawn } from 'child_process';
 import os from 'os';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import { execSync } from 'child_process';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -45,112 +44,7 @@ function requireAuth(req) {
   return req.headers.authorization === `Bearer ${TOKEN}`;
 }
 
-// Cross-platform Codex CLI detection
-function findCodexCommand() {
-  const userSpecified = process.env.CODEX_CMD;
-  if (userSpecified) {
-    console.log(`Using user-specified Codex command: ${userSpecified}`);
-    return { command: userSpecified, useShell: shouldUseShell(userSpecified) };
-  }
-
-  const isWindows = os.platform() === 'win32';
-  const candidates = isWindows 
-    ? ['codex.cmd', 'codex.exe', 'codex']
-    : ['codex'];
-
-  // Try to find Codex in PATH
-  for (const cmd of candidates) {
-    try {
-      const which = isWindows ? 'where' : 'which';
-      const result = execSync(`${which} ${cmd}`, { 
-        encoding: 'utf8', 
-        stdio: ['ignore', 'pipe', 'ignore'],
-        timeout: 5000
-      }).trim();
-      
-      if (result) {
-        console.log(`Found Codex CLI: ${result}`);
-        // On Windows, prefer the .cmd version for Node.js spawn compatibility
-        const finalCmd = isWindows && !result.endsWith('.cmd') && !result.endsWith('.exe') ? 'codex.cmd' : cmd;
-        return { command: finalCmd, useShell: isWindows };
-      }
-    } catch (error) {
-      // Command not found, try next candidate
-      continue;
-    }
-  }
-
-  // Fallback: try common installation paths
-  const commonPaths = isWindows 
-    ? [
-        path.join(os.homedir(), 'AppData', 'Roaming', 'npm', 'codex.cmd'),
-        path.join(os.homedir(), 'AppData', 'Roaming', 'npm', 'codex.exe'),
-        'C:\\Program Files\\nodejs\\codex.cmd',
-        'codex.cmd' // Let shell resolve it
-      ]
-    : [
-        '/usr/local/bin/codex',
-        '/opt/homebrew/bin/codex',
-        path.join(os.homedir(), '.local', 'bin', 'codex'),
-        path.join(os.homedir(), 'node_modules', '.bin', 'codex'),
-        'codex' // Let shell resolve it
-      ];
-
-  for (const cmdPath of commonPaths) {
-    try {
-      if (fs.existsSync(cmdPath)) {
-        console.log(`Found Codex CLI at: ${cmdPath}`);
-        return { command: cmdPath, useShell: isWindows };
-      }
-    } catch (error) {
-      // Path doesn't exist, continue
-    }
-  }
-
-  console.warn('Codex CLI not found in common locations, falling back to "codex"');
-  return { command: 'codex', useShell: isWindows };
-}
-
-function shouldUseShell(command) {
-  const isWindows = os.platform() === 'win32';
-  // Use shell on Windows for npm-installed commands or if no extension
-  if (isWindows) {
-    return !path.extname(command) || command.includes('npm') || !path.isAbsolute(command);
-  }
-  return false;
-}
-
-function testCodexCommand(codexInfo) {
-  try {
-    console.log(`Testing Codex CLI: ${codexInfo.command}`);
-    const result = execSync(`${codexInfo.command} --version`, { 
-      encoding: 'utf8', 
-      stdio: ['ignore', 'pipe', 'ignore'],
-      timeout: 10000,
-      shell: codexInfo.useShell
-    }).trim();
-    
-    console.log(`✅ Codex CLI test successful: ${result}`);
-    return true;
-  } catch (error) {
-    console.error(`❌ Codex CLI test failed: ${error.message}`);
-    return false;
-  }
-}
-
-// Initialize Codex command detection
-const CODEX_INFO = findCodexCommand();
-if (!testCodexCommand(CODEX_INFO)) {
-  console.error('\n🔥 ERROR: Codex CLI is not working properly!');
-  console.error('Please ensure Codex CLI is installed and accessible:');
-  console.error('- Run: npm install -g @anthropic-ai/codex-cli');
-  console.error('- Or set CODEX_CMD environment variable to the correct path');
-  console.error('- Check that the command works in your terminal\n');
-}
-
-const CODEX_CMD = CODEX_INFO.command;
-const USE_SHELL = CODEX_INFO.useShell;
-
+const CODEX_CMD = process.env.CODEX_CMD || 'codex';
 // Anchor workdir to the project root (parent of codex-webui) unless overridden
 const ROOT_DIR = path.resolve(__dirname, '..');
 const WORKDIR = process.env.CODEX_WORKDIR ? path.resolve(process.env.CODEX_WORKDIR) : ROOT_DIR;
@@ -241,9 +135,7 @@ function broadcastStatus() {
     resume_path: LAST_RESUME_PATH,
     resume_meta: meta,
     memory: facts,
-    config: getConfigSafe(),
-    codex_running: !!codexProc && !codexProc.killed,
-    session_configured: sessionConfigured
+    config: getConfigSafe()
   });
 }
 
@@ -374,16 +266,7 @@ function startCodexIfNeeded(cb) {
     }
   }
 
-  console.log(`\n🚀 Starting Codex CLI: ${CODEX_CMD}`);
-  console.log(`Arguments: ${args.join(' ')}`);
-  console.log(`Working directory: ${WORKDIR}`);
-  console.log(`Use shell: ${USE_SHELL}`);
-  
-  codexProc = spawn(CODEX_CMD, args, { 
-    cwd: WORKDIR, 
-    shell: USE_SHELL,
-    stdio: ['pipe', 'pipe', 'pipe']
-  });
+  codexProc = spawn(CODEX_CMD, args, { cwd: WORKDIR });
 
   codexProc.stdout.setEncoding('utf8');
   codexProc.stderr.setEncoding('utf8');
@@ -392,27 +275,8 @@ function startCodexIfNeeded(cb) {
     broadcast('stderr', { text: d.toString() });
   });
 
-  codexProc.on('exit', (code, signal) => {
-    const reason = signal ? `signal ${signal}` : `code ${code}`;
-    console.log(`🛑 Codex process exited with ${reason}`);
-    broadcast('system', { text: `Codex exited with ${reason}` });
-    codexProc = null;
-    sessionConfigured = false;
-  });
-
-  codexProc.on('error', (error) => {
-    console.error(`🔥 Codex process error:`, error);
-    
-    let errorMessage = 'Failed to start Codex CLI';
-    if (error.code === 'ENOENT') {
-      errorMessage = `Codex CLI not found: ${CODEX_CMD}. Please check installation and PATH.`;
-    } else if (error.code === 'EACCES') {
-      errorMessage = `Permission denied: ${CODEX_CMD}. Check file permissions.`;
-    } else {
-      errorMessage = `Codex CLI error: ${error.message}`;
-    }
-    
-    broadcast('error', { text: errorMessage });
+  codexProc.on('exit', (code) => {
+    broadcast('system', { text: `Codex exited with code ${code}` });
     codexProc = null;
     sessionConfigured = false;
   });
@@ -515,42 +379,12 @@ function startCodexWithResume(resumePath, cb) {
     if (resumePath) {
       args.push('-c', `experimental_resume=${resumePath}`);
     }
-    console.log(`\n🚀 Starting Codex CLI (resume): ${CODEX_CMD}`);
-    console.log(`Arguments: ${args.join(' ')}`);
-    console.log(`Working directory: ${WORKDIR}`);
-    console.log(`Use shell: ${USE_SHELL}`);
-    
-    codexProc = spawn(CODEX_CMD, args, { 
-      cwd: WORKDIR, 
-      shell: USE_SHELL,
-      stdio: ['pipe', 'pipe', 'pipe']
-    });
+    codexProc = spawn(CODEX_CMD, args, { cwd: WORKDIR });
     codexProc.stdout.setEncoding('utf8');
     codexProc.stderr.setEncoding('utf8');
     codexProc.stderr.on('data', (d) => broadcast('stderr', { text: d.toString() }));
-    codexProc.on('exit', (code, signal) => {
-      const reason = signal ? `signal ${signal}` : `code ${code}`;
-      console.log(`🛑 Codex process exited with ${reason}`);
-      broadcast('system', { text: `Codex exited with ${reason}` });
-      codexProc = null;
-      sessionConfigured = false;
-    });
-
-    codexProc.on('error', (error) => {
-      console.error(`🔥 Codex process error:`, error);
-      
-      let errorMessage = 'Failed to start Codex CLI';
-      if (error.code === 'ENOENT') {
-        errorMessage = `Codex CLI not found: ${CODEX_CMD}. Please check installation and PATH.`;
-      } else if (error.code === 'EACCES') {
-        errorMessage = `Permission denied: ${CODEX_CMD}. Check file permissions.`;
-      } else if (error.code === 'EINVAL') {
-        errorMessage = `Invalid arguments for Codex CLI. Check command syntax.`;
-      } else {
-        errorMessage = `Codex CLI error: ${error.message}`;
-      }
-      
-      broadcast('error', { text: errorMessage });
+    codexProc.on('exit', (code) => {
+      broadcast('system', { text: `Codex exited with code ${code}` });
       codexProc = null;
       sessionConfigured = false;
     });

@@ -326,38 +326,15 @@
           try {
             const d = JSON.parse(ev.data);
             const resumed = d.resumed ? `Yes` : 'No';
-            const codexRunning = d.codex_running ? 'Running' : 'Stopped';
-            const sessionConfigured = d.session_configured ? 'Ready' : 'Starting';
             const meta = d.resume_meta || null;
             let name = '';
             if (meta) { name = `${fmtTime12(meta.mtimeMs)} — ${toKB(meta.size)} KB`; }
-            
-            // Update status text with more comprehensive info
-            const statusParts = [];
-            statusParts.push(`Codex: <strong>${codexRunning}</strong>`);
-            if (d.codex_running) {
-              statusParts.push(`Session: <strong>${sessionConfigured}</strong>`);
-            }
-            if (d.resumed) {
-              statusParts.push(`Resumed: <strong>Yes</strong>${name ? ` — <span style=\"opacity:.8\">${escapeHtml(name)}</span>` : ''}`);
-            }
-            statusEl.innerHTML = statusParts.join(' | ');
-            
-            // Update connection dot based on Codex status
-            if (connDot) {
-              if (d.codex_running && d.session_configured) {
-                connDot.className = 'dot ok';
-              } else if (d.codex_running) {
-                connDot.className = 'dot warn';
-              } else {
-                connDot.className = 'dot err';
-              }
-            }
-            
+            statusEl.innerHTML = `Resumed: <strong>${resumed}</strong>${name ? ` — <span style=\"opacity:.8\">${escapeHtml(name)}</span>` : ''}`;
             if (d.resume_path && d.resume_path !== lastLoadedResumePath) {
               lastLoadedResumePath = d.resume_path;
               loadTranscript();
             }
+            if (connDot) connDot.className = 'dot ok';
           } catch {}
         });
         es.addEventListener('system', ev => {
