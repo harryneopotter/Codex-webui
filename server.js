@@ -75,7 +75,7 @@ function readMemoryFacts() {
   try {
     ensureMemoryFile();
     const txt = fs.readFileSync(MEMORY_FILE, 'utf8');
-    const facts = (txt.split('\n') || []).filter(l => l.trim().startsWith('- ')).map(l => l.replace(/^\-\s*/, '').trim());
+    const facts = (txt.split(/\r?\n/) || []).filter(l => l.trim().startsWith('- ')).map(l => l.replace(/^\-\s*/, '').trim());
     return facts;
   } catch {
     return [];
@@ -85,7 +85,7 @@ function readMemoryFacts() {
 function saveMemoryFactsFromText(text) {
   if (!text) return;
   ensureMemoryFile();
-  const lines = text.split('\n');
+  const lines = text.split(/\r?\n/);
   let factsToAdd = [];
   for (const raw of lines) {
     const line = raw.trim();
@@ -282,7 +282,7 @@ function startCodexIfNeeded(cb) {
   });
 
   codexProc.stdout.on('data', (chunk) => {
-    const lines = chunk.split('\n');
+    const lines = chunk.split(/\r?\n/);
     for (const raw of lines) {
       const line = raw.trim();
       if (!line) continue;
@@ -347,7 +347,7 @@ function stopCodex(cb) {
   const proc = codexProc;
   codexProc = null;
   setTimeout(() => {
-    try { proc.kill('SIGKILL'); } catch {}
+    try { proc.kill(); } catch {}
     cb();
   }, 500);
 }
@@ -389,7 +389,7 @@ function startCodexWithResume(resumePath, cb) {
       sessionConfigured = false;
     });
     codexProc.stdout.on('data', (chunk) => {
-      const lines = chunk.split('\n');
+      const lines = chunk.split(/\r?\n/);
       for (const raw of lines) {
         const line = raw.trim();
         if (!line) continue;
@@ -513,7 +513,7 @@ function sendUserInput(text) {
 function serveStatic(req, res) {
   const url = req.url.split('?')[0];
   const root = path.join(__dirname, 'public');
-  let filePath = root + (url === '/' ? '/index.html' : url);
+  let filePath = path.join(root, url === '/' ? 'index.html' : url);
   if (!filePath.startsWith(root)) { setCORS(res); res.writeHead(403); return res.end('Forbidden'); }
   fs.readFile(filePath, (err, data) => {
     if (err) { setCORS(res); res.writeHead(404); return res.end('Not Found'); }
@@ -582,7 +582,7 @@ const server = http.createServer((req, res) => {
         if (!fact || typeof fact !== 'string') { setCORS(res); res.writeHead(400); return res.end('Bad JSON'); }
         ensureMemoryFile();
         try {
-          const lines = fs.readFileSync(MEMORY_FILE, 'utf8').split('\n');
+          const lines = fs.readFileSync(MEMORY_FILE, 'utf8').split(/\r?\n/);
           const needle = `- ${fact}`;
           const out = lines.filter(l => l.trim() !== needle.trim());
           fs.writeFileSync(MEMORY_FILE, out.join('\n'), 'utf8');
