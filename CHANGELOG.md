@@ -7,16 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0] - 2025-11-23
+
 ### Added
 - **TypeScript Migration**: Complete rewrite of the backend from `server.js` to modular TypeScript (`src/`).
 - **Infrastructure**: Docker support (`Dockerfile`) and CI/CD workflow (`.github/workflows/ci.yml`).
 - **Code Quality**: Added ESLint and Prettier for linting and formatting.
-- **Documentation**: Added `CONTRIBUTING.md`, `docs/DESIGN.md`, and `docs/ARCHITECTURE.md`.
-- **Features**: Rate limiting middleware and Health Check endpoint.
+- **Documentation**: Added `CONTRIBUTING.md`, `docs/DESIGN.md`, `docs/ARCHITECTURE.md`, `docs/IMPLEMENTATION_PLAN.md`, `docs/progress.md`, and `docs/migration-article-outline.md`.
+- **Features**: Rate limiting middleware, Health Check endpoint, and token counter/context size monitor in WebUI.
+- **Testing**: Added basic test for `/memory` endpoint.
+- **CI/CD**: Updated GitHub Actions to include lint and build steps, supporting both `master` and `Codex-webui-ts` branches.
+- **Branding**: Added project status badges, Shields.io badges, "Why I Built This" section, and CLI vs WebUI comparison table to README.
+- **Visual Assets**: Added placeholders for demo GIF and screenshots in README.
+- **Metadata**: Added GitHub topics (typescript, nodejs, ai, real-time, sse) to `package.json`.
 
 ### Changed
 - **Architecture**: Split monolithic `server.js` into `src/server.ts`, `src/services/`, and `src/utils/`.
 - **Build**: Now requires a build step (`npm run build`) to generate `dist/`.
+- **Documentation**: Moved additional markdown files to `docs/` folder for better organization.
+
+### Removed
+- **Legacy Code**: Deleted original `server.js` (replaced by TypeScript modules).
 
 ## [1.0.0] - 2023-10-27
 ### Added
