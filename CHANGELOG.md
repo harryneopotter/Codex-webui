@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Branding**: Added project status badges, Shields.io badges, "Why I Built This" section, and CLI vs WebUI comparison table to README.
 - **Visual Assets**: Added placeholders for demo GIF and screenshots in README.
 - **Metadata**: Added GitHub topics (typescript, nodejs, ai, real-time, sse) to `package.json`.
+- **Analysis**: Added `docs/tool-review.md` with architectural overview and product ratings.
 
 ### Changed
 - **Architecture**: Split monolithic `server.js` into `src/server.ts`, `src/services/`, and `src/utils/`.

@@ -127,6 +127,7 @@ graph TD
 For a deep dive, check out:
 *   [**Design Document**](docs/DESIGN.md): Philosophy and technical decisions.
 *   [**Architecture Document**](docs/ARCHITECTURE.md): Component breakdown and data flow.
+*   [**Tool Review**](docs/tool-review.md): Critical assessment, feature inventory, and ratings.
 
 ## 🛠️ Development
 
