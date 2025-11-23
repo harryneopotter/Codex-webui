@@ -2,7 +2,7 @@
   "name": "codex-webui",
   "version": "1.0.0",
   "description": "A tiny, dependency-free Web UI that wraps the local OpenAI Codex CLI",
-  "main": "server.js",
+  "main": "dist/server.js",
   "type": "module",
   "scripts": {
     "start": "node dist/server.js",

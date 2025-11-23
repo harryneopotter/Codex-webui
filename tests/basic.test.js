@@ -11,7 +11,7 @@ const root = fileURLToPath(new URL('..', import.meta.url)); // codex-webui/
 
 function startServer(port = 5065) {
   const env = { ...process.env, PORT: String(port) };
-  const child = spawn('node', ['server.js'], { cwd: root, env });
+  const child = spawn('node', ['dist/server.js'], { cwd: root, env });
   let out = '';
   child.stdout.setEncoding('utf8');
   child.stdout.on('data', (d) => { out += d.toString(); });
@@ -74,5 +74,23 @@ test('GET /sessions returns JSON structure', async (t) => {
   const j = await r.json();
   assert.ok(Array.isArray(j.sessions));
   assert.ok('current' in j);
+});
+
+test('rate limiting works', async (t) => {
+  const { child, url } = startServer(5069);
+  t.after(() => { try { child.kill(); } catch {} });
+  assert.equal(await waitForHealth(url), true);
+
+  // Send 101 requests
+  const requests = [];
+  for (let i = 0; i < 101; i++) {
+    requests.push(fetch(url + '/health'));
+  }
+
+  const responses = await Promise.all(requests);
+  const tooManyRequests = responses.filter(r => r.status === 429);
+
+  // At least one request should be rate limited (since limit is 100)
+  assert.ok(tooManyRequests.length > 0, 'should rate limit after 100 requests');
 });
 

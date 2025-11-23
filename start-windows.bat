@@ -19,6 +19,6 @@ echo Starting server on http://%HOST%:%PORT%
 echo Press Ctrl+C to stop the server
 echo.
 
-node server.js
+node dist/server.js
 
 pause

@@ -1,18 +1,79 @@
 # Codex WebUI
 
-A tiny, dependency‑free Web UI that wraps the local **OpenAI Codex CLI**. It streams output via **SSE**, resumes from your latest `rollout-*.jsonl`, and lets you manage sessions & memory — all from a single static page.
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Node](https://img.shields.io/badge/node-%3E%3D18-green.svg)
+![TypeScript](https://img.shields.io/badge/built%20with-TypeScript-blue)
+![Docker](https://img.shields.io/badge/docker-ready-blue)
 
-> Not affiliated with OpenAI. Runs entirely on your machine.
+A tiny, **dependency-free** Web UI that wraps the local **OpenAI Codex CLI**. It streams output via **SSE**, resumes from your latest sessions, and lets you manage persistent memory — all from a clean, dark-mode browser interface.
 
-## Why
-The Codex terminal can get messy (scrollback/overwrites). This provides a clean browser UI with streaming, resume, and small quality‑of‑life tools.
+> **Note**: This project is not affiliated with OpenAI. It runs entirely on your local machine.
 
-## Architecture
+![Codex WebUI - Dark Theme](assets/webui-dark.jpg)
+
+## ✨ Features
+
+*   **🔌 Local & Private**: Spawns your local `codex` binary. No data leaves your machine unless you configure it to.
+*   **📡 Real-time Streaming**: Uses Server-Sent Events (SSE) for instant feedback.
+*   **🧠 Persistent Memory**: View and manage long-term memory facts stored in `.codex/memory.md`.
+*   **♻️ Smart Resume**: Automatically resumes from your last "rollout" or lets you pick from history.
+*   **🛡️ Zero Dependencies**: The runtime uses only native Node.js modules.
+*   **🐳 Docker Ready**: Includes a Dockerfile for easy containerization.
+
+## 🚀 Quick Start
+
+### Option 1: Using Node.js (Recommended)
+
+1.  **Clone & Install**:
+    ```bash
+    git clone https://github.com/harryneopotter/Codex-webui.git
+    cd Codex-webui
+    npm install
+    ```
+
+2.  **Build & Run**:
+    ```bash
+    npm run build
+    npm start
+    ```
+
+3.  **Open**: Visit `http://127.0.0.1:5055` in your browser.
+
+### Option 2: Using Docker
+
+```bash
+docker build -t codex-webui .
+docker run -p 5055:5055 -v ~/.codex:/root/.codex codex-webui
+```
+
+## ⚙️ Configuration
+
+You can configure the server via environment variables or the `config.toml` file.
+
+### Environment Variables (`.env`)
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | `5055` | Port to listen on |
+| `HOST` | `127.0.0.1` | Interface to bind to |
+| `WEBUI_TOKEN` | *None* | Optional Bearer token for auth |
+| `CODEX_CMD` | `codex` | Path to your Codex binary |
+
+### Runtime Config (`config.toml`)
+
+Edit `config.toml` or use the **Settings** gear icon in the UI to change:
+*   **Model**: `gpt-5` (or other supported models)
+*   **Approval Policy**: `never` (auto-approve) or `ask`
+*   **Sandbox Mode**: `danger-full-access`
+
+## 🏗️ Architecture
+
+The project follows a modular TypeScript architecture.
 
 ```mermaid
 graph TD
     Client[Browser Client<br/>public/index.html]
-    Server[Node.js Server<br/>server.js]
+    Server[Node.js Server<br/>src/server.ts]
     Codex[Codex CLI Process]
     FS[File System]
 
@@ -31,103 +92,14 @@ graph TD
     FS -.-> Memory
 ```
 
-### Core Components
+For a deep dive, check out:
+*   [**Design Document**](docs/DESIGN.md): Philosophy and technical decisions.
+*   [**Architecture Document**](docs/ARCHITECTURE.md): Component breakdown and data flow.
 
-**Server (`server.js`):**
-- HTTP server with SSE streaming for real-time communication
-- Spawns and manages Codex CLI child processes
-- Handles session resume from `~/.codex/sessions/*.jsonl` files
-- Manages persistent memory in `.codex/memory.md`
+## 🤝 Contributing
 
-**Client (`public/index.html`):**
-- Single-page application with vanilla JavaScript
-- Real-time message streaming via EventSource
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to set up your development environment.
 
-## Screenshots
+## 📄 License
 
-### Dark Theme
-![Codex WebUI - Dark Theme](assets/webui-dark.jpg)
-
-### Light Theme
-![Codex WebUI - Light Theme](assets/webui-light.jpg)
-
-## Features
-- 🔌 **Local only**: spawns your `codex` binary
-- 📡 **SSE streaming** with connection status
-- ♻️ **Resume** from latest rollout or pick any session file
-- 🧠 **Memory** viewer & delete (writes to `.codex/memory.md`)
-- ⚙️ Config UI for model / approval / sandbox / extras
-- 🛡️ Optional bearer token for mutating routes
-
-## Installation
-
-### Prerequisites
-- Node.js 18+ installed on your system
-- OpenAI Codex CLI installed and configured
-
-### Setup
-
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/harryneopotter/Codex-webui.git
-   cd Codex-webui
-   ```
-
-2. **Install dependencies (optional - this project is dependency-free):**
-   ```bash
-   npm install  # Only needed for development scripts
-   ```
-
-3. **Configure environment (optional):**
-   ```bash
-   cp .env.example .env
-   # Edit .env with your preferences
-   ```
-
-## Quick Start
-
-### Method 1: Using npm scripts
-```bash
-npm start
-# or for development with auto-reload:
-npm run dev
-```
-
-### Method 2: Direct node execution
-```bash
-# 1) Run the server (default binds to loopback)
-HOST=127.0.0.1 PORT=5055 node server.js
-
-# 2) Open the UI
-open http://127.0.0.1:5055   # macOS
-# Windows:
-start http://127.0.0.1:5055
-# Linux:
-xdg-open http://127.0.0.1:5055
-```
-
-> Tip: If you ever expose it behind a proxy, set `ALLOW_ORIGIN` and `WEBUI_TOKEN`, or tunnel with SSH/Tailscale.
-
-## Environment
-See `.env.example` for all supported variables.
-
-## Endpoints (brief)
-- `GET /` — static UI
-- `GET /events` — SSE stream (status, deltas, tool, stderr)
-- `POST /message` — send user text (`{ text }`)
-- `GET /sessions` — list session files
-- `POST /resume` — `{ path }` to a rollout file
-- `GET /session-messages` — last 100 messages from current session
-- `GET /projects` — history grouped by `workdir`
-- `GET /memory` / `DELETE /memory` — view/remove facts
-- `GET /config` / `PUT /config` — read/update config (whitelisted keys)
-- `POST /restart` — restart Codex with current resume
-- `POST /shutdown` — ask Codex to shut down
-
-## Security
-- Default bind: `127.0.0.1`
-- Default CORS: `http://localhost:PORT`
-- Optional bearer token: set `WEBUI_TOKEN` if exposing
-
-## License
-MIT — see `LICENSE`.
+MIT © [HarryNeoPotter](https://github.com/harryneopotter)

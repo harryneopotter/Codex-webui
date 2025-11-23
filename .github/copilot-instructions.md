@@ -2,7 +2,7 @@
 
 ## Architecture Overview
 
-This is a **zero-dependency** Node.js 18+ web application that provides a browser UI for the OpenAI Codex CLI. The entire server logic lives in a single 779-line `server.js` file that:
+This is a **zero-dependency** Node.js 18+ web application that provides a browser UI for the OpenAI Codex CLI. The server logic is written in **TypeScript** and compiled to `dist/`.
 - Spawns and manages the Codex CLI child process via `spawn()`
 - Streams real-time output to browser clients using Server-Sent Events (SSE)
 - Manages session files (`~/.codex/sessions/rollout-*.jsonl`)
@@ -14,7 +14,8 @@ This is a **zero-dependency** Node.js 18+ web application that provides a browse
 
 ### Codex CLI Integration
 The server spawns Codex with specific flags and parses JSON-line stdout events:
-```javascript
+```typescript
+// src/services/codex.ts
 codexProc = spawn(CODEX_CMD, args, { 
   cwd: WORKDIR, 
   stdio: ['pipe', 'pipe', 'pipe'],
@@ -35,7 +36,8 @@ Agent responses are scanned for `SAVE_MEMORY:` lines and appended to `.codex/mem
 
 ### SSE Broadcasting Pattern
 All real-time updates use the `broadcast(event, data)` function to push to connected clients:
-```javascript
+```typescript
+// src/server.ts
 broadcast('delta', { text: chunk });  // Streaming text
 broadcast('tool', { name: 'Bash', detail: cmd });  // Tool invocations
 broadcast('status', { resumed: true, memory: [...] });  // State updates
@@ -44,7 +46,7 @@ broadcast('status', { resumed: true, memory: [...] });  // State updates
 ### Configuration Layers
 1. **Environment (`.env`)**: Static startup config (Port, Host, Auth Token, Codex Binary Path).
 2. **Runtime (`config.toml`)**: Dynamic user preferences (Model, Approval Policy, Tools).
-   - Uses minimal hand-rolled TOML parser (`parseToml`/`dumpToml`).
+   - Uses minimal hand-rolled TOML parser (`src/utils/config.ts`).
    - **Whitelisted keys only**: `model`, `approval_policy`, `sandbox_mode`, `tools.web_search_request`, `use_streamable_shell`, `instructions_extra`.
 
 ## Development Workflows
@@ -56,16 +58,17 @@ broadcast('status', { resumed: true, memory: [...] });  // State updates
 
 ### Running & Testing
 ```bash
-npm run dev          # Auto-reload during development
+npm run dev          # Auto-reload during development (tsc --watch)
+npm run build        # Compile TypeScript
 npm test             # Node.js built-in test runner (tests/basic.test.js)
-node server.js       # Direct execution
+node dist/server.js  # Direct execution
 ```
 
 Tests use ports 5065-5068 to avoid conflicts. Each test starts its own server instance.
 
 ### Adding HTTP Endpoints
-Pattern used throughout `server.js`:
-```javascript
+Pattern used throughout `src/server.ts`:
+```typescript
 if (req.method === 'GET' && req.url === '/your-route') {
   setCORS(res);  // Always set CORS headers first
   res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -86,7 +89,8 @@ The `public/index.html` uses:
 
 | File | Purpose | When to Edit |
 |------|---------|--------------|
-| `server.js` | Entire backend logic | Adding endpoints, changing Codex integration |
+| `src/server.ts` | Main HTTP server | Adding endpoints |
+| `src/services/codex.ts` | Codex process management | Changing Codex integration |
 | `public/index.html` | Complete client app | UI changes, new client features |
 | `tests/basic.test.js` | Node test runner tests | Adding endpoint tests |
 | `config.toml` | Runtime config (auto-generated) | Don't edit manually |
@@ -95,22 +99,22 @@ The `public/index.html` uses:
 ## Common Tasks
 
 ### Adding a New Config Option
-1. Update `defaultConfig()` with default value
-2. Add key to whitelist in `PUT /config` handler (line ~615)
-3. Use in Codex spawn args (around line 170)
+1. Update `defaultConfig()` in `src/utils/config.ts`
+2. Add key to whitelist in `PUT /config` handler in `src/server.ts`
+3. Use in Codex spawn args in `src/services/codex.ts`
 4. Add UI field in settings modal (public/index.html ~line 600)
 
 ### Handling New Codex Event Types
-Add parsing in `codexProc.stdout.on('data')` handler (line ~340):
-```javascript
+Add parsing in `handleStdout` in `src/services/codex.ts`:
+```typescript
 if (type === 'your_new_event') {
-  broadcast('custom', { data: msg.your_field });
+  this.emit('broadcast', 'custom', { data: msg.your_field });
 }
 ```
 
 ### Session Management Operations
-- **List**: `scanSessions()` recursively walks `~/.codex/sessions/`
-- **Resume**: `startCodexWithResume(path)` kills current process and spawns new one
+- **List**: `scanSessions()` in `src/utils/fs-helpers.ts`
+- **Resume**: `codexService.restart(path)` in `src/server.ts`
 - **Delete**: Validates path with `isWithinSessions()` before `fs.unlinkSync()`
 
 ## Security & Deployment
@@ -150,8 +154,6 @@ Derived from `server.js` comments. These features are high-priority candidates f
 
 - **Missing Infrastructure**: No automated CI/CD pipeline, Docker containerization, or health monitoring.
 - **Testing**: Tests are minimal (5 basic HTTP tests).
-- **Architecture**: Single-file `server.js` (779 lines) with limited inline comments.
-- **Type Safety**: No TypeScript.
 - **Security**: No rate limiting on endpoints.
 - **Documentation**: Missing `CONTRIBUTING.md`, `CHANGELOG.md`, and architecture diagrams.
 

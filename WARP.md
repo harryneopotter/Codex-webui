@@ -8,7 +8,7 @@ Codex WebUI is a dependency-free Web UI that wraps the local OpenAI Codex CLI. I
 
 **Key Characteristics:**
 - Node.js 18+ ES module-based application
-- Single-file server implementation (`server.js`) with zero dependencies
+- Modular TypeScript server implementation (`src/server.ts`)
 - Serves static HTML/CSS/JS client from `public/index.html`
 - Integrates with local OpenAI Codex CLI binary
 - Uses JSONL session files for persistence
@@ -17,7 +17,7 @@ Codex WebUI is a dependency-free Web UI that wraps the local OpenAI Codex CLI. I
 
 ### Core Components
 
-**Server (`server.js`):**
+**Server (`src/server.ts`):**
 - HTTP server with SSE streaming for real-time communication
 - Spawns and manages Codex CLI child processes
 - Handles session resume from `~/.codex/sessions/*.jsonl` files
@@ -43,8 +43,12 @@ Codex WebUI is a dependency-free Web UI that wraps the local OpenAI Codex CLI. I
 
 ```
 /
-├── server.js           # Main server application
-├── package.json        # Node.js project config (minimal, dependency-free)
+├── src/                # TypeScript source code
+│   ├── server.ts       # Main server application
+│   ├── services/       # Business logic services
+│   └── utils/          # Helper utilities
+├── dist/               # Compiled JavaScript
+├── package.json        # Node.js project config
 ├── public/index.html   # Single-file client application
 ├── start-windows.bat   # Windows batch launcher
 ├── tests/basic.test.js # Node.js built-in test suite
@@ -83,7 +87,7 @@ npm start
 start-windows.bat
 
 # Manual start with environment variables
-HOST=127.0.0.1 PORT=5055 node server.js
+HOST=127.0.0.1 PORT=5055 node dist/server.js
 ```
 
 ### Testing
@@ -113,10 +117,10 @@ node --test tests/basic.test.js
 - Manual testing via browser at `http://127.0.0.1:5055`
 
 **Key Development Areas:**
-- Server-side: Add new HTTP endpoints in `server.js`
+- Server-side: Add new HTTP endpoints in `src/server.ts`
 - Client-side: Modify the single `public/index.html` file
-- Configuration: Update TOML parsing/writing functions
-- Session management: Extend `scanSessions()` and related functions
+- Configuration: Update TOML parsing/writing functions in `src/utils/config.ts`
+- Session management: Extend `scanSessions()` in `src/utils/fs-helpers.ts`
 
 ## Integration Points
 
