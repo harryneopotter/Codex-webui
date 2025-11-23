@@ -5,8 +5,9 @@ import { spawn } from 'node:child_process';
 import { setTimeout as wait } from 'node:timers/promises';
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { fileURLToPath } from 'node:url';
 
-const root = new URL('..', import.meta.url).pathname; // codex-webui/
+const root = fileURLToPath(new URL('..', import.meta.url)); // codex-webui/
 
 function startServer(port = 5065) {
   const env = { ...process.env, PORT: String(port) };
@@ -32,7 +33,7 @@ async function waitForHealth(url, tries = 40) {
 
 test('server starts and /health responds', async (t) => {
   const { child, url } = startServer(5065);
-  t.after(() => { try { child.kill('SIGKILL'); } catch {} });
+  t.after(() => { try { child.kill(); } catch {} });
   assert.equal(await waitForHealth(url), true, 'health should respond');
   const r = await fetch(url + '/health');
   assert.equal(r.status, 200);
@@ -42,7 +43,7 @@ test('server starts and /health responds', async (t) => {
 
 test('GET /config returns defaults', async (t) => {
   const { child, url } = startServer(5066);
-  t.after(() => { try { child.kill('SIGKILL'); } catch {} });
+  t.after(() => { try { child.kill(); } catch {} });
   assert.equal(await waitForHealth(url), true);
   const r = await fetch(url + '/config');
   assert.equal(r.status, 200);
@@ -53,7 +54,7 @@ test('GET /config returns defaults', async (t) => {
 
 test('PUT /config roundtrip', async (t) => {
   const { child, url } = startServer(5067);
-  t.after(() => { try { child.kill('SIGKILL'); } catch {} });
+  t.after(() => { try { child.kill(); } catch {} });
   assert.equal(await waitForHealth(url), true);
   const payload = { model: 'gpt-5', approval_policy: 'never' };
   const put = await fetch(url + '/config', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
@@ -66,7 +67,7 @@ test('PUT /config roundtrip', async (t) => {
 
 test('GET /sessions returns JSON structure', async (t) => {
   const { child, url } = startServer(5068);
-  t.after(() => { try { child.kill('SIGKILL'); } catch {} });
+  t.after(() => { try { child.kill(); } catch {} });
   assert.equal(await waitForHealth(url), true);
   const r = await fetch(url + '/sessions');
   assert.equal(r.status, 200);
