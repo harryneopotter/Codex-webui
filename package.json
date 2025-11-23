@@ -5,9 +5,14 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "start": "node server.js",
-    "test": "node --test tests/*.test.js",
-    "dev": "node --watch server.js"
+    "start": "node dist/server.js",
+    "dev": "tsc --watch",
+    "build": "tsc",
+    "test": "node --test tests/*.test.js"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
   },
   "keywords": [
     "codex",

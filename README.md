@@ -7,6 +7,42 @@ A tiny, dependency‑free Web UI that wraps the local **OpenAI Codex CLI**. It s
 ## Why
 The Codex terminal can get messy (scrollback/overwrites). This provides a clean browser UI with streaming, resume, and small quality‑of‑life tools.
 
+## Architecture
+
+```mermaid
+graph TD
+    Client[Browser Client<br/>public/index.html]
+    Server[Node.js Server<br/>server.js]
+    Codex[Codex CLI Process]
+    FS[File System]
+
+    Client -- HTTP/SSE --> Server
+    Server -- Spawn/Stdio --> Codex
+    Server -- Read/Write --> FS
+    
+    subgraph "File System"
+        Config[config.toml]
+        Sessions[~/.codex/sessions/]
+        Memory[.codex/memory.md]
+    end
+
+    FS -.-> Config
+    FS -.-> Sessions
+    FS -.-> Memory
+```
+
+### Core Components
+
+**Server (`server.js`):**
+- HTTP server with SSE streaming for real-time communication
+- Spawns and manages Codex CLI child processes
+- Handles session resume from `~/.codex/sessions/*.jsonl` files
+- Manages persistent memory in `.codex/memory.md`
+
+**Client (`public/index.html`):**
+- Single-page application with vanilla JavaScript
+- Real-time message streaming via EventSource
+
 ## Screenshots
 
 ### Dark Theme
