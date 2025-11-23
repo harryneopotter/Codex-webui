@@ -15,7 +15,9 @@ A tiny, **zero runtime dependency** Web UI that wraps the local **OpenAI Codex C
 
 ![Codex WebUI Demo](https://via.placeholder.com/800x400?text=Demo+GIF+Coming+Soon)
 
-![Dark Theme Screenshot](assets/webui-dark.jpg) ![Light Theme Screenshot](https://via.placeholder.com/400x300?text=Light+Theme)
+![Dark Theme Screenshot](assets/webui-dark.jpg) ![Light Theme Screenshot](assets/webui-light.jpg)
+
+![TypeScript UI](assets/webui-ts.jpg) ![Codex TS Dark](assets/codex-webui-ts.dark.jpg) ![Codex TS](assets/codex-webui.ts.jpg)
 
 ## ✨ Features
 

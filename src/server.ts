@@ -73,11 +73,8 @@ function broadcastStatus() {
 
 function serveStatic(req: IncomingMessage, res: ServerResponse) {
   const url = (req.url || '').split('?')[0];
-  // Adjust path to point to public folder relative to dist/server.js or src/server.ts
-  // Assuming compiled to dist/, public is in ../public
-  // But during dev with ts-node or similar, it might be different.
-  // Let's assume standard structure: project/public
-  const root = path.resolve(__dirname, '../../public');
+  // Serve static files from public/ in the current working directory
+  const root = path.resolve(process.cwd(), 'public');
   
   let filePath = path.join(root, url === '/' ? 'index.html' : url);
   if (!filePath.startsWith(root)) { setCORS(res); res.writeHead(403); return res.end('Forbidden'); }
