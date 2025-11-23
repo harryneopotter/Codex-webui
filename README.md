@@ -5,12 +5,17 @@
 ![TypeScript](https://img.shields.io/badge/built%20with-TypeScript-blue)
 ![Docker](https://img.shields.io/badge/docker-ready-blue)
 ![CI](https://github.com/harryneopotter/Codex-webui/actions/workflows/ci.yml/badge.svg)
+![Status](https://img.shields.io/badge/status-TypeScript%20Migration%20Complete-green)
+
+> **Note**: This is the **TypeScript** version of Codex WebUI. For the original single-file JavaScript version, see the [`master`](https://github.com/harryneopotter/Codex-webui/tree/master) branch.
 
 A tiny, **zero runtime dependency** Web UI that wraps the local **OpenAI Codex CLI**. It streams output via **SSE**, resumes from your latest sessions, and lets you manage persistent memory — all from a clean, dark-mode browser interface.
 
 > **Note**: This project is not affiliated with OpenAI. It runs entirely on your local machine.
 
-![Codex WebUI - Dark Theme](assets/webui-dark.jpg)
+![Codex WebUI Demo](https://via.placeholder.com/800x400?text=Demo+GIF+Coming+Soon)
+
+![Dark Theme Screenshot](assets/webui-dark.jpg) ![Light Theme Screenshot](https://via.placeholder.com/400x300?text=Light+Theme)
 
 ## ✨ Features
 
@@ -20,6 +25,28 @@ A tiny, **zero runtime dependency** Web UI that wraps the local **OpenAI Codex C
 *   **♻️ Smart Resume**: Automatically resumes from your last "rollout" or lets you pick from history.
 *   **🛡️ Zero Runtime Dependencies**: The production build uses only native Node.js modules.
 *   **🐳 Docker Ready**: Includes a Dockerfile for easy containerization.
+
+## Why I Built This
+
+The original OpenAI Codex CLI is incredibly powerful, but its terminal interface can get cluttered with scrolling output, lost context, and no built-in persistence. I built this WebUI to provide:
+
+- **Clean Interface**: A distraction-free browser UI with real-time streaming.
+- **Session Management**: Easy resume from previous conversations.
+- **Memory Persistence**: Long-term fact storage across sessions.
+- **Zero Dependencies**: Runs on native Node.js, no heavy frameworks.
+
+It's designed for developers who want the power of Codex without the terminal hassle.
+
+## CLI vs WebUI Comparison
+
+| Feature              | CLI                          | WebUI                        |
+|----------------------|------------------------------|------------------------------|
+| Real-time Streaming  | ❌ (Scrolls away)           | ✅ (Live updates)            |
+| Session Resume       | ❌ (Lost on exit)           | ✅ (Persistent sessions)     |
+| Memory Persistence   | ❌ (No built-in)            | ✅ (`.codex/memory.md`)      |
+| UI/UX                | Terminal (messy)            | Browser (clean)              |
+| Dependencies         | None                        | Zero Runtime                 |
+| Setup                | `codex` command             | `npm run build && npm start` |
 
 ## 🚀 Quick Start
 
@@ -70,6 +97,8 @@ Edit `config.toml` or use the **Settings** gear icon in the UI to change:
 ## 🏗️ Architecture
 
 The project follows a modular TypeScript architecture.
+
+> **Legacy Comparison**: Unlike the `master` branch which uses a single `server.js` file, this version splits logic into services and utilities for better maintainability.
 
 ```mermaid
 graph TD

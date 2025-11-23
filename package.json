@@ -1,6 +1,6 @@
 {
   "name": "codex-webui",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "A tiny, dependency-free Web UI that wraps the local OpenAI Codex CLI",
   "main": "dist/server.js",
   "type": "module",
@@ -27,7 +27,12 @@
     "webui",
     "openai",
     "cli",
-    "wrapper"
+    "wrapper",
+    "typescript",
+    "nodejs",
+    "ai",
+    "real-time",
+    "sse"
   ],
   "author": "HarryNeoPotter",
   "license": "MIT",

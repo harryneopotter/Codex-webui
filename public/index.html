@@ -59,7 +59,10 @@
   <body>
     <div class="wrap">
       <header>
-        <div><span id="connDot" class="dot warn"></span>Codex WebUI</div>
+        <div style="display:flex; align-items:center; gap:16px;">
+          <span id="connDot" class="dot warn"></span>Codex WebUI
+          <span id="tokenStats" class="stats mono" style="margin-left:16px; font-size:12px; opacity:.8;"></span>
+        </div>
         <button id="themeToggleHeader" title="Toggle theme" style="background:transparent; border:0; cursor:pointer; width:32px; height:32px; display:inline-flex; align-items:center; justify-content:center; color:var(--text);">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 12.5A9 9 0 1 1 11.5 3 7 7 0 0 0 21 12.5z" stroke="currentColor" stroke-width="1.6"/></svg>
         </button>
@@ -148,6 +151,30 @@
       const icoSettings = document.getElementById('icoSettings');
       const themeToggleHeader = document.getElementById('themeToggleHeader');
       const connDot = document.getElementById('connDot');
+      const tokenStats = document.getElementById('tokenStats');
+      // --- Token Counter & Context Size Monitor ---
+      function countTokens(text) {
+        // Simple GPT-3/4 token estimate: 1 token ≈ 4 chars (English)
+        // For more accurate, use tiktoken or similar on backend
+        if (!text) return 0;
+        return Math.ceil(text.trim().length / 4);
+      }
+
+      function updateTokenStats() {
+        // Gather all user and agent messages in the log
+        let allText = '';
+        log.querySelectorAll('.msg').forEach(el => {
+          allText += el.textContent + '\n';
+        });
+        const tokenCount = countTokens(allText);
+        const contextSize = allText.length;
+        tokenStats.textContent = `Context: ${contextSize} chars | ~${tokenCount} tokens`;
+      }
+
+      // Update on new message
+      const observer = new MutationObserver(updateTokenStats);
+      observer.observe(log, { childList: true, subtree: true });
+      document.addEventListener('DOMContentLoaded', updateTokenStats);
 
       // Modal state
       const modal = document.createElement('div');

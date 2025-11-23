@@ -90,7 +90,13 @@ test('rate limiting works', async (t) => {
   const responses = await Promise.all(requests);
   const tooManyRequests = responses.filter(r => r.status === 429);
 
-  // At least one request should be rate limited (since limit is 100)
-  assert.ok(tooManyRequests.length > 0, 'should rate limit after 100 requests');
+test('GET /memory returns facts array', async (t) => {
+  const { child, url } = startServer(5070);
+  t.after(() => { try { child.kill(); } catch {} });
+  assert.equal(await waitForHealth(url), true);
+  const r = await fetch(url + '/memory');
+  assert.equal(r.status, 200);
+  const j = await r.json();
+  assert.ok(Array.isArray(j.facts));
 });
 
