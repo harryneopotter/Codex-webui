@@ -65,7 +65,7 @@ It's designed for developers who want the power of Codex without the terminal ha
     npm start
     ```
 
-3.  **Open**: Visit `http://127.0.0.1:5055` in your browser.
+3.  **Open**: The server runs on `http://0.0.0.0:5055`. In GitHub Codespaces or dev containers, forward port 5055 and visit the forwarded URL (e.g., `https://your-codespace-name-5055.app.github.dev`).
 
 ### Option 2: Using Docker
 
@@ -83,7 +83,7 @@ You can configure the server via environment variables or the `config.toml` file
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `PORT` | `5055` | Port to listen on |
-| `HOST` | `127.0.0.1` | Interface to bind to |
+| `HOST` | `0.0.0.0` | Interface to bind to |
 | `WEBUI_TOKEN` | *None* | Optional Bearer token for auth |
 | `CODEX_CMD` | `codex` | Path to your Codex binary |
 
