@@ -1,5 +1,8 @@
 # Codex WebUI
 
+> **Looking for the TypeScript version?**  
+> See [`Codex-webui-ts`](https://github.com/harryneopotter/Codex-webui/tree/Codex-webui-ts) for the modern, modular TypeScript implementation.
+
 A tiny, dependency‑free Web UI that wraps the local **OpenAI Codex CLI**. It streams output via **SSE**, resumes from your latest `rollout-*.jsonl`, and lets you manage sessions & memory — all from a single static page.
 
 > Not affiliated with OpenAI. Runs entirely on your machine.
