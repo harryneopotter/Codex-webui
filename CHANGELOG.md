@@ -29,7 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - **Legacy Code**: Deleted original `server.js` (replaced by TypeScript modules).
 
-## [1.0.0] - 2023-10-27
+## [1.0.0] - 2025-10-27
 ### Added
 - Initial release of Codex WebUI.
 - Single-file Node.js server (`server.js`).
