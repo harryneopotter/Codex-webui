@@ -4,8 +4,9 @@
 ![Node](https://img.shields.io/badge/node-%3E%3D18-green.svg)
 ![TypeScript](https://img.shields.io/badge/built%20with-TypeScript-blue)
 ![Docker](https://img.shields.io/badge/docker-ready-blue)
+![CI](https://github.com/harryneopotter/Codex-webui/actions/workflows/ci.yml/badge.svg)
 
-A tiny, **dependency-free** Web UI that wraps the local **OpenAI Codex CLI**. It streams output via **SSE**, resumes from your latest sessions, and lets you manage persistent memory — all from a clean, dark-mode browser interface.
+A tiny, **zero runtime dependency** Web UI that wraps the local **OpenAI Codex CLI**. It streams output via **SSE**, resumes from your latest sessions, and lets you manage persistent memory — all from a clean, dark-mode browser interface.
 
 > **Note**: This project is not affiliated with OpenAI. It runs entirely on your local machine.
 
@@ -17,7 +18,7 @@ A tiny, **dependency-free** Web UI that wraps the local **OpenAI Codex CLI**. It
 *   **📡 Real-time Streaming**: Uses Server-Sent Events (SSE) for instant feedback.
 *   **🧠 Persistent Memory**: View and manage long-term memory facts stored in `.codex/memory.md`.
 *   **♻️ Smart Resume**: Automatically resumes from your last "rollout" or lets you pick from history.
-*   **🛡️ Zero Dependencies**: The runtime uses only native Node.js modules.
+*   **🛡️ Zero Runtime Dependencies**: The production build uses only native Node.js modules.
 *   **🐳 Docker Ready**: Includes a Dockerfile for easy containerization.
 
 ## 🚀 Quick Start
@@ -95,6 +96,18 @@ graph TD
 For a deep dive, check out:
 *   [**Design Document**](docs/DESIGN.md): Philosophy and technical decisions.
 *   [**Architecture Document**](docs/ARCHITECTURE.md): Component breakdown and data flow.
+
+## 🛠️ Development
+
+This project is built with **TypeScript** and enforces code quality via **ESLint** and **Prettier**.
+
+### Commands
+
+*   **Build**: `npm run build` - Compiles TypeScript to `dist/`.
+*   **Dev**: `npm run dev` - Runs with `tsc --watch`.
+*   **Test**: `npm test` - Runs the test suite (using Node.js native test runner).
+*   **Lint**: `npm run lint` - Checks for code quality issues.
+*   **Format**: `npm run format` - Auto-formats code with Prettier.
 
 ## 🤝 Contributing
 

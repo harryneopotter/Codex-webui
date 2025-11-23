@@ -8,10 +8,18 @@
     "start": "node dist/server.js",
     "dev": "tsc --watch",
     "build": "tsc",
+    "lint": "eslint src/**/*.ts",
+    "format": "prettier --write .",
     "test": "node --test tests/*.test.js"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.47.0",
+    "@typescript-eslint/parser": "^8.47.0",
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "prettier": "^3.6.2",
     "typescript": "^5.0.0"
   },
   "keywords": [
