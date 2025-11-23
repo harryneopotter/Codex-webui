@@ -266,7 +266,14 @@ function startCodexIfNeeded(cb) {
     }
   }
 
-  codexProc = spawn(CODEX_CMD, args, { cwd: WORKDIR });
+  // Explicitly configure stdio to avoid "stdout is not a terminal" errors
+  // Pass environment with TERM set to help Codex run in non-TTY mode
+  const spawnEnv = { ...process.env, TERM: 'dumb' };
+  codexProc = spawn(CODEX_CMD, args, { 
+    cwd: WORKDIR, 
+    stdio: ['pipe', 'pipe', 'pipe'],
+    env: spawnEnv
+  });
 
   codexProc.stdout.setEncoding('utf8');
   codexProc.stderr.setEncoding('utf8');
@@ -379,7 +386,14 @@ function startCodexWithResume(resumePath, cb) {
     if (resumePath) {
       args.push('-c', `experimental_resume=${resumePath}`);
     }
-    codexProc = spawn(CODEX_CMD, args, { cwd: WORKDIR });
+    // Explicitly configure stdio to avoid "stdout is not a terminal" errors
+    // Pass environment with TERM set to help Codex run in non-TTY mode
+    const spawnEnv = { ...process.env, TERM: 'dumb' };
+    codexProc = spawn(CODEX_CMD, args, { 
+      cwd: WORKDIR, 
+      stdio: ['pipe', 'pipe', 'pipe'],
+      env: spawnEnv
+    });
     codexProc.stdout.setEncoding('utf8');
     codexProc.stderr.setEncoding('utf8');
     codexProc.stderr.on('data', (d) => broadcast('stderr', { text: d.toString() }));
