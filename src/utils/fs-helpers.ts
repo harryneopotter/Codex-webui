@@ -1,5 +1,5 @@
 import fs from 'fs';
-import path from 'path';
+import * as path from 'path';
 import os from 'os';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
@@ -10,7 +10,7 @@ const __dirname = dirname(__filename);
 const HISTORY_FILE = path.resolve(__dirname, '../../history.json');
 const SESS_ROOT = path.join(os.homedir(), '.codex', 'sessions');
 
-export const isWithinSessions = (p: string): boolean => p && path.resolve(p).startsWith(path.resolve(SESS_ROOT));
+export const isWithinSessions = (p: string): boolean => p ? path.resolve(p).startsWith(path.resolve(SESS_ROOT)) : false;
 
 export function scanSessions(): SessionEntry[] {
   const root = SESS_ROOT;
@@ -25,8 +25,9 @@ export function scanSessions(): SessionEntry[] {
       const full = path.join(dir, ent.name);
       if (ent.isDirectory()) { stack.push(full); continue; }
       if (/^rollout-.*\.jsonl$/.test(ent.name)) {
-        let stat; try { stat = fs.statSync(full); } catch { continue; }
-        out.push({ path: full, name: ent.name, mtimeMs: stat.mtimeMs, size: stat.size });
+        let stat: fs.Stats | undefined;
+        try { stat = fs.statSync(full); } catch { continue; }
+        if (stat) out.push({ path: full, name: ent.name, mtimeMs: stat.mtimeMs, size: stat.size });
       }
     }
   }

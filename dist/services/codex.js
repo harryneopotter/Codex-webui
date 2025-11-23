@@ -1,6 +1,7 @@
 import { spawn } from 'child_process';
 import path from 'path';
 import os from 'os';
+import fs from 'fs';
 import { EventEmitter } from 'events';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
@@ -223,7 +224,7 @@ export class CodexService extends EventEmitter {
                         catch {
                             continue;
                         }
-                        if (stat.mtimeMs > latestMtime) {
+                        if (stat && stat.mtimeMs > latestMtime) {
                             latestMtime = stat.mtimeMs;
                             latest = full;
                         }

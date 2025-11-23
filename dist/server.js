@@ -11,7 +11,7 @@ import { scanSessions, parseSessionMessages, isWithinSessions, readHistory, writ
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const PORT = process.env.PORT ? Number(process.env.PORT) : 5055;
-const HOST = process.env.HOST || '127.0.0.1';
+const HOST = process.env.HOST || '0.0.0.0';
 const TOKEN = process.env.WEBUI_TOKEN || '';
 const ALLOW_ORIGIN = process.env.ALLOW_ORIGIN || `http://localhost:${PORT}`;
 const sseClients = new Set();

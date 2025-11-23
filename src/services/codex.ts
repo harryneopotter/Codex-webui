@@ -1,6 +1,7 @@
 import { spawn, ChildProcess } from 'child_process';
 import path from 'path';
 import os from 'os';
+import fs from 'fs';
 import { EventEmitter } from 'events';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
@@ -212,8 +213,9 @@ export class CodexService extends EventEmitter {
           const full = path.join(dir, ent.name);
           if (ent.isDirectory()) { stack.push(full); continue; }
           if (/^rollout-.*\.jsonl$/.test(ent.name)) {
-            let stat; try { stat = fs.statSync(full); } catch { continue; }
-            if (stat.mtimeMs > latestMtime) { latestMtime = stat.mtimeMs; latest = full; }
+            let stat: fs.Stats | undefined;
+            try { stat = fs.statSync(full); } catch { continue; }
+            if (stat && stat.mtimeMs > latestMtime) { latestMtime = stat.mtimeMs; latest = full; }
           }
         }
       }

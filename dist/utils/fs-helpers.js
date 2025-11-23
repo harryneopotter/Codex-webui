@@ -1,5 +1,5 @@
 import fs from 'fs';
-import path from 'path';
+import * as path from 'path';
 import os from 'os';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
@@ -7,7 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const HISTORY_FILE = path.resolve(__dirname, '../../history.json');
 const SESS_ROOT = path.join(os.homedir(), '.codex', 'sessions');
-export const isWithinSessions = (p) => p && path.resolve(p).startsWith(path.resolve(SESS_ROOT));
+export const isWithinSessions = (p) => p ? path.resolve(p).startsWith(path.resolve(SESS_ROOT)) : false;
 export function scanSessions() {
     const root = SESS_ROOT;
     const out = [];
@@ -37,7 +37,8 @@ export function scanSessions() {
                 catch {
                     continue;
                 }
-                out.push({ path: full, name: ent.name, mtimeMs: stat.mtimeMs, size: stat.size });
+                if (stat)
+                    out.push({ path: full, name: ent.name, mtimeMs: stat.mtimeMs, size: stat.size });
             }
         }
     }
