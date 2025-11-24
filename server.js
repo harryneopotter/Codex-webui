@@ -90,7 +90,8 @@ function saveMemoryFactsFromText(text) {
   for (const raw of lines) {
     const line = raw.trim();
     if (line.toUpperCase().startsWith('SAVE_MEMORY:')) {
-      const fact = line.split(':', 1).length ? line.slice(line.indexOf(':') + 1).trim() : '';
+      const idx = line.indexOf(':');
+      const fact = idx >= 0 ? line.slice(idx + 1).trim() : '';
       if (fact) factsToAdd.push(fact);
     }
   }
@@ -547,13 +548,12 @@ const server = http.createServer((req, res) => {
     return res.end();
   }
   if (req.method === 'GET' && req.url.startsWith('/events')) {
- setCORS(res);   
-   res.writeHead(200, {
+    setCORS(res);
+    res.writeHead(200, {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache',
       Connection: 'keep-alive',
     });
-   
     res.write('\n');
     sseClients.add(res);
     // Push current status to the newly connected client
