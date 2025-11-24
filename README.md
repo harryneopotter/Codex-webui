@@ -78,7 +78,9 @@ xdg-open http://127.0.0.1:5055
 ## Environment
 See `.env.example` for all supported variables.
 
-## Endpoints (brief)
+## API Overview
+
+Quick reference of key endpoints:
 - `GET /` — static UI
 - `GET /events` — SSE stream (status, deltas, tool, stderr)
 - `POST /message` — send user text (`{ text }`)
@@ -91,10 +93,30 @@ See `.env.example` for all supported variables.
 - `POST /restart` — restart Codex with current resume
 - `POST /shutdown` — ask Codex to shut down
 
+📚 **[Complete API Documentation →](docs/API.md)**
+
 ## Security
 - Default bind: `127.0.0.1`
 - Default CORS: `http://localhost:PORT`
 - Optional bearer token: set `WEBUI_TOKEN` if exposing
+
+## Documentation
+
+Comprehensive documentation is available in the `docs/` directory:
+
+- **[Design Philosophy](docs/DESIGN.md)** - Core principles, design decisions, and rationale
+- **[Technical Architecture](docs/ARCHITECTURE.md)** - System design, data flow, and implementation details
+- **[Comparison Guide](docs/COMPARISON.md)** - How Codex WebUI compares to native CLI and similar tools
+- **[API Reference](docs/API.md)** - Complete endpoint and SSE event specifications
+- **[Development Guide](docs/DEVELOPMENT.md)** - Contributing, testing, and extending the codebase
+
+## Contributing
+
+We welcome contributions! Please see the [Development Guide](docs/DEVELOPMENT.md) for:
+- Setting up your development environment
+- Code style guidelines
+- Testing procedures
+- Pull request process
 
 ## License
 MIT — see `LICENSE`.
