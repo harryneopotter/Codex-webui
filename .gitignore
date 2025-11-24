@@ -1,0 +1,31 @@
+# dependencies
+node_modules/
+
+
+# env
+.env
+
+
+# logs
+*.log
+
+
+# Codex history/memory
+codex-webui/history.json
+.codex/
+
+# Old readme file (keep local only)
+README-old.md
+
+# Runtime files
+config.toml
+history.json
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
