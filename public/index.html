@@ -465,17 +465,6 @@
       });
 
       // initial data
-      async function loadTranscript(){
-        try {
-          const r = await fetch('/session-messages');
-          const { messages } = await r.json();
-          log.innerHTML = '';
-          (messages||[]).forEach(m => {
-            const klass = m.role === 'user' ? 'from-user' : 'from-agent';
-            addBubble(`<div class=\"msg\">${(m.text||'').replace(/</g,'&lt;')}</div>`, klass);
-          });
-        } catch {}
-      }
       loadSessions();
       loadProjects();
       document.addEventListener('DOMContentLoaded', ()=> document.body.classList.add('ready'));
